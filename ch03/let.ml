@@ -66,3 +66,16 @@ let rec valueOf exp env = match exp with
 let valueOfProgram = function
   | Program e -> valueOf e EmptyEnv
 ;;
+
+
+let exp1 = DiffExp (ConstExp 5, ConstExp 3);;
+let pgm1 = Program exp1;;
+print_int (expValToNum (valueOfProgram pgm1));;
+
+let exp2 = LetExp (Symbol "x", ConstExp 5, DiffExp (VarExp (Symbol "x"), ConstExp 2));;
+let pgm2 = Program exp2;;
+print_int (expValToNum (valueOfProgram pgm2));;
+
+let exp3 = IfExp (ZeroExp (DiffExp (ConstExp 5, ConstExp 5)), exp1, exp2);;
+let pgm3 = Program exp3;;
+print_int (expValToNum (valueOfProgram pgm3));;
