@@ -30,3 +30,15 @@ let rec applyEnv env var = match env with
           if var = var1 then val1
           else applyEnv env1 var
 ;;
+
+
+type expression =
+  | ConstExp of int
+  | DiffExp of expression * expression
+  | ZeroExp of expression
+  | IfExp of expression * expression * expression
+  | VarExp of symbol
+  | LetExp of symbol * expression * expression
+;;
+
+type program = Program expression;;
