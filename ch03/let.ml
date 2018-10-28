@@ -5,13 +5,13 @@ type expVal =
   | BoolVal of bool
 ;;
 
-Exception CannotConvertNonNumVal;;
+exception CannotConvertNonNumVal;;
 let expValToNum = function
   | NumVal v -> v
-  | _ -> raise CannotConvertNonNumval
+  | _ -> raise CannotConvertNonNumVal
 ;;
 
-Exception CannotConvertNonBoolVal;;
+exception CannotConvertNonBoolVal;;
 let expValToBool = function
   | BoolVal b -> b
   | _ -> raise CannotConvertNonBoolVal
@@ -22,7 +22,7 @@ type environment =
   | ExtendEnv of symbol * expVal * environment
 ;;
 
-Exception VariableNotFound;;
+exception VariableNotFound;;
 
 let rec applyEnv env var = match env with
   | EmptyEnv -> raise VariableNotFound
@@ -41,4 +41,28 @@ type expression =
   | LetExp of symbol * expression * expression
 ;;
 
-type program = Program expression;;
+type program = Program of expression;;
+
+
+let rec valueOf exp env = match exp with
+  | ConstExp n ->
+          NumVal n
+  | DiffExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          NumVal (n1 - n2)
+  | ZeroExp e ->
+          BoolVal (0 = expValToNum (valueOf e env))
+  | IfExp (e1, e2, e3) ->
+          if expValToBool (valueOf e1 env)
+          then valueOf e2 env
+          else valueOf e3 env
+  | VarExp var ->
+          applyEnv env var
+  | LetExp (var, e, body) ->
+          valueOf body (ExtendEnv (var, (valueOf e env), env))
+;;
+
+let valueOfProgram = function
+  | Program e -> valueOf e EmptyEnv
+;;
