@@ -19,6 +19,13 @@ let expValToBool = function
   | _ -> raise CannotConvertNonBoolVal
 ;;
 
+exception CannotConvertNonListVal;;
+let expValToList = function
+  | NilVal -> []
+  | ConsVal (e1, e2) -> e1 :: (expValToList e2)
+  | _ -> raise CannotConvertNonBoolVal
+;;
+
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
