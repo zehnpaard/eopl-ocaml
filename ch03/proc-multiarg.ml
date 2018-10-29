@@ -14,6 +14,7 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
+  | ExtendEnvMulti of symbol list * expVal list * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
@@ -44,11 +45,22 @@ let expValToProc = function
 
 
 exception VariableNotFound;;
+let rec searchVars vars vals var = match vars, vals with
+  | [], _ | _, [] -> None
+  | var1::vars1, val1::vals1 ->
+          if var1 = var
+          then Some val1
+          else searchVars vars1 vals1 var
+;;
 let rec applyEnv env var = match env with
   | EmptyEnv -> raise VariableNotFound
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
           else applyEnv env1 var
+  | ExtendEnvMulti (vars, vals, env1) ->
+          (match searchVars vars vals var with
+            | None -> applyEnv env1 var
+            | Some val1 -> val1)
 ;;
 
 
