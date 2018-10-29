@@ -7,8 +7,8 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * expression
-  | CallExp of expression * expression
+  | ProcExp of symbol list * expression
+  | CallExp of expression * expression list
 ;;
 
 type environment =
@@ -20,7 +20,7 @@ and expVal =
   | BoolVal of bool
   | ProcVal of procedure
 and procedure =
-  | Procedure of symbol * expression * environment
+  | Procedure of symbol list * expression * environment
 ;;
 
 type program = Program of expression;;
@@ -81,13 +81,14 @@ let rec valueOf exp env = match exp with
           applyEnv env var
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
-  | ProcExp (var, body) ->
-          ProcVal (Procedure (var, body, env))
-  | CallExp (func, arg) ->
+  | ProcExp (vars, body) ->
+          ProcVal (Procedure (vars, body, env))
+  | CallExp (func, args) ->
           let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
-and applyProcedure p v = match p with
-  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+          let argvals = List.map (fun e -> valueOf e env) args in
+          applyProcedure p argvals
+and applyProcedure p vals = match p with
+  | Procedure (vars, body, senv) -> valueOf body (ExtendEnvMulti (vars, vals, senv))
 ;;
 
 let valueOfProgram = function
