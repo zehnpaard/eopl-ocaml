@@ -35,7 +35,10 @@ let rec applyEnv env var = match env with
 type expression =
   | ConstExp of int
   | MinusExp of expression
+  | AddExp of expression * expression
   | DiffExp of expression * expression
+  | MulExp of expression * expression
+  | DivExp of expression * expression
   | ZeroExp of expression
   | IfExp of expression * expression * expression
   | VarExp of symbol
@@ -50,10 +53,22 @@ let rec valueOf exp env = match exp with
           NumVal n
   | MinusExp e ->
           NumVal (- (expValToNum (valueOf e env)))
+  | AddExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          NumVal (n1 + n2)
   | DiffExp (e1, e2) ->
           let n1 = expValToNum (valueOf e1 env) in
           let n2 = expValToNum (valueOf e2 env) in
           NumVal (n1 - n2)
+  | MulExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          NumVal (n1 * n2)
+  | DivExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          NumVal (n1 / n2)
   | ZeroExp e ->
           BoolVal (0 = expValToNum (valueOf e env))
   | IfExp (e1, e2, e3) ->
@@ -87,3 +102,6 @@ let exp4 = DiffExp (ConstExp 5, MinusExp (ConstExp 3));;
 let pgm4 = Program exp4;;
 print_int (expValToNum (valueOfProgram pgm4));;
 
+let exp5 = DivExp (MulExp (ConstExp 6, AddExp (ConstExp 5, MinusExp (ConstExp 1))), ConstExp 2);;
+let pgm5 = Program exp5;;
+print_int (expValToNum (valueOfProgram pgm5));;
