@@ -40,6 +40,9 @@ type expression =
   | MulExp of expression * expression
   | DivExp of expression * expression
   | ZeroExp of expression
+  | EqualExp of expression * expression
+  | GreaterExp of expression * expression
+  | LessExp of expression * expression
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
@@ -71,6 +74,18 @@ let rec valueOf exp env = match exp with
           NumVal (n1 / n2)
   | ZeroExp e ->
           BoolVal (0 = expValToNum (valueOf e env))
+  | EqualExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          BoolVal (n1 = n2)
+  | GreaterExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          BoolVal (n1 > n2)
+  | LessExp (e1, e2) ->
+          let n1 = expValToNum (valueOf e1 env) in
+          let n2 = expValToNum (valueOf e2 env) in
+          BoolVal (n1 < n2)
   | IfExp (e1, e2, e3) ->
           if expValToBool (valueOf e1 env)
           then valueOf e2 env
