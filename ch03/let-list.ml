@@ -20,7 +20,7 @@ let expValToBool = function
 ;;
 
 exception CannotConvertNonListVal;;
-let expValToList = function
+let rec expValToList = function
   | NilVal -> []
   | ConsVal (e1, e2) -> e1 :: (expValToList e2)
   | _ -> raise CannotConvertNonListVal
@@ -52,12 +52,14 @@ type expression =
   | ConsExp of expression * expression
   | CarExp of expression
   | CdrExp of expression
+  | ListExp of expression list
 ;;
 
 type program = Program of expression;;
 
 
 exception EmptyList
+exception ListOpOnNonList
 let rec valueOf exp env = match exp with
   | ConstExp n ->
           NumVal n
@@ -82,11 +84,16 @@ let rec valueOf exp env = match exp with
   | CarExp e ->
           (match valueOf e env with
             | NilVal -> raise EmptyList
-            | ConsVal (ev1, ev2) -> ev1)
+            | ConsVal (ev1, ev2) -> ev1
+            | _ -> raise ListOpOnNonList)
   | CdrExp e ->
           (match valueOf e env with
             | NilVal -> raise EmptyList
-            | ConsVal (ev1, ev2) -> ev2)
+            | ConsVal (ev1, ev2) -> ev2
+            | _ -> raise ListOpOnNonList)
+  | ListExp xs ->
+          let f y ys = ConsVal (valueOf y env, ys) in
+          List.fold_right f xs NilVal
 ;;
 
 let valueOfProgram = function
