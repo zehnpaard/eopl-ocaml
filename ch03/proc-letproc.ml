@@ -9,6 +9,7 @@ type expression =
   | LetExp of symbol * expression * expression
   | ProcExp of symbol * expression
   | CallExp of expression * expression
+  | LetProcExp of symbol * symbol * expression * expression
 ;;
 
 type environment =
@@ -74,6 +75,9 @@ let rec valueOf exp env = match exp with
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
+  | LetProcExp (var, farg, fbody, body) ->
+          let pval = ProcVal (Procedure (farg, fbody, env)) in
+          valueOf body (ExtendEnv (var, pval, env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
