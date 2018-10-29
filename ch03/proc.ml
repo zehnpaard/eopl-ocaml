@@ -8,18 +8,21 @@ type expression =
   | VarExp of symbol
   | LetExp of symbol * expression * expression
   | ProcExp of symbol * expression
+  | CallExp of expression * expression
 ;;
 
-type procedure = 
-  | Procedure of symbol * expression * environment
+type environment =
+  | EmptyEnv
+  | ExtendEnv of symbol * expVal * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
   | ProcVal of procedure
-and environment =
-  | EmptyEnv
-  | ExtendEnv of symbol * expVal * environment
+and procedure =
+  | Procedure of symbol * expression * environment
 ;;
+
+type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
 let expValToNum = function
@@ -49,9 +52,6 @@ let rec applyEnv env var = match env with
 ;;
 
 
-type program = Program of expression;;
-
-
 let rec valueOf exp env = match exp with
   | ConstExp n ->
           NumVal n
@@ -71,6 +71,11 @@ let rec valueOf exp env = match exp with
           valueOf body (ExtendEnv (var, (valueOf e env), env))
   | ProcExp (var, body) ->
           ProcVal (Procedure (var, body, env))
+  | CallExp (func, arg) ->
+          let p = expValToProc (valueOf func env) in
+          applyProcedure p (valueOf arg env)
+and applyProcedure p v = match p with
+  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
 
 let valueOfProgram = function
