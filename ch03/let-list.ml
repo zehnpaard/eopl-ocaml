@@ -50,6 +50,8 @@ type expression =
   | LetExp of symbol * expression * expression
   | NilExp
   | ConsExp of expression * expression
+  | CarExp of expression
+  | CdrExp of expression
 ;;
 
 type program = Program of expression;;
@@ -78,13 +80,13 @@ let rec valueOf exp env = match exp with
   | ConsExp (e1, e2) ->
           ConsVal (valueOf e1 env, valueOf e2 env)
   | CarExp e ->
-          match valueOf e env with
-          | NilVal -> raise EmptyList
-          | ConsVal (ev1, ev2) -> ev1
+          (match valueOf e env with
+            | NilVal -> raise EmptyList
+            | ConsVal (ev1, ev2) -> ev1)
   | CdrExp e ->
-          match valueOf e env with
-          | NilVal -> raise EmptyList
-          | ConsVal (ev1, ev2) -> ev2
+          (match valueOf e env with
+            | NilVal -> raise EmptyList
+            | ConsVal (ev1, ev2) -> ev2)
 ;;
 
 let valueOfProgram = function
