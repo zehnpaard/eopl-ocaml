@@ -51,6 +51,25 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
+let rec getFreeVars defined = function
+  | ConstExp n -> []
+  | DiffExp (e1, e2) ->
+          List.concat (List.map (getFreeVars defined) [e1; e2])
+  | ZeroExp e -> (getFreeVars defined e)
+  | IfExp (e1, e2, e3) ->
+          List.concat (List.map (getFreeVars defined) [e1; e2; e3])
+  | VarExp var ->
+          if List.exists (fun v -> v = var) defined
+          then []
+          else [var]
+  | LetExp (var, e, body) ->
+          (getFreeVars defined e) @ (getFreeVars (var::defined) body)
+  | ProcExp (var, body) ->
+          getFreeVars (var::defined) body
+  | CallExp (func, arg) ->
+          List.concat (List.map (getFreeVars defined) [func; arg])
+;;
+
 let rec valueOf exp env = match exp with
   | ConstExp n ->
           NumVal n
