@@ -70,6 +70,12 @@ let rec getFreeVars defined = function
           List.concat (List.map (getFreeVars defined) [func; arg])
 ;;
 
+let makeClosure var body env =
+  let f v vs = ExtendEnv (v,  applyEnv env v, vs) in
+  List.fold_right f (getFreeVars [var] body) EmptyEnv
+;;
+
+
 let rec valueOf exp env = match exp with
   | ConstExp n ->
           NumVal n
