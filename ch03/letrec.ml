@@ -14,6 +14,7 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
+  | ExtendEnvRec of symbol * symbol * expression * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
@@ -48,6 +49,9 @@ let rec applyEnv env var = match env with
   | EmptyEnv -> raise VariableNotFound
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
+          else applyEnv env1 var
+  | ExtendEnvRec (fname, arg, body, env1) ->
+          if var = fname then ProcVal (Procedure (arg, body, env))
           else applyEnv env1 var
 ;;
 
