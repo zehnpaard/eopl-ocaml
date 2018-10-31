@@ -74,9 +74,9 @@ let rec valueOf exp env = match exp with
           ProcVal (Procedure (var, body))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
-and applyProcedure p v = match p with
-  | Procedure (var, body) -> valueOf body (ExtendEnv (var, v, senv))
+          applyProcedure p (valueOf arg env) env
+and applyProcedure p v env = match p with
+  | Procedure (var, body) -> valueOf body (ExtendEnv (var, v, env))
 ;;
 
 let valueOfProgram = function
