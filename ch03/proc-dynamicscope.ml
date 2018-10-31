@@ -11,6 +11,10 @@ type expression =
   | CallExp of expression * expression
 ;;
 
+type procedure =
+  | Procedure of symbol * expression
+;;
+
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
@@ -18,9 +22,6 @@ and expVal =
   | NumVal of int
   | BoolVal of bool
   | ProcVal of procedure
-and procedure =
-  | Procedure of symbol * expression * environment
-;;
 
 type program = Program of expression;;
 
@@ -70,12 +71,12 @@ let rec valueOf exp env = match exp with
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
   | ProcExp (var, body) ->
-          ProcVal (Procedure (var, body, env))
+          ProcVal (Procedure (var, body))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
 and applyProcedure p v = match p with
-  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+  | Procedure (var, body) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
 
 let valueOfProgram = function
