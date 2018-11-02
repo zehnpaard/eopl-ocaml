@@ -15,7 +15,7 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
-  | ExtendEnvRec of symbol * symbol list * expression * environment
+  | ExtendEnvRec of symbol list * (symbol list * expression) list * environment
   | ExtendEnvMulti of symbol list * expVal list * environment
 and expVal =
   | NumVal of int
@@ -59,9 +59,10 @@ let rec applyEnv env var = match env with
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
           else applyEnv env1 var
-  | ExtendEnvRec (fname, args, body, env1) ->
-          if var = fname then ProcVal (Procedure (args, body, env))
-          else applyEnv env1 var
+  | ExtendEnvRec (vars, vals, env1) ->
+          (match searchVars vars vals var with
+          | None -> applyEnv env1 var
+          | Some (args, body) -> ProcVal (Procedure (args, body, env)))
   | ExtendEnvMulti (vars, vals, env1) ->
           (match searchVars vars vals var with
           | None -> applyEnv env1 var
