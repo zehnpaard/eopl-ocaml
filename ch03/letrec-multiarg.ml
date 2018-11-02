@@ -92,7 +92,7 @@ let rec valueOf exp env = match exp with
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
   | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env1))
+          valueOf body (ExtendEnvRec (fname, farg, fbody, env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
