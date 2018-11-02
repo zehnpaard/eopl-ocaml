@@ -15,14 +15,14 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
-  | ExtendEnvRec of symbol * symbol * expression * environment
+  | ExtendEnvRec of symbol * symbol list * expression * environment
   | ExtendEnvMulti of symbol list * expVal list * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
   | ProcVal of procedure
 and procedure =
-  | Procedure of symbol * expression * environment
+  | Procedure of symbol list * expression * environment
 ;;
 
 type program = Program of expression;;
@@ -88,9 +88,9 @@ let rec valueOf exp env = match exp with
           valueOf body (ExtendEnv (var, (valueOf e env), env))
   | ProcExp (vars, body) ->
           ProcVal (Procedure (vars, body, env))
-  | CallExp (func, arg) ->
+  | CallExp (func, args) ->
           let p = expValToProc (valueOf func env) in
-          let vals = List.map (fun x -> valueOf x env) in
+          let vals = List.map (fun x -> valueOf x env) args in
           applyProcedure p vals
   | LetRecExp (fname, fargs, fbody, body) ->
           valueOf body (ExtendEnvRec (fname, fargs, fbody, env))
