@@ -15,7 +15,7 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
-  | ExtendEnvRec of symbol * symbol * expression * environment
+  | ExtendEnvRec of symbol list * (symbol * expression) list * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
@@ -46,14 +46,22 @@ let expValToProc = function
 
 
 exception VariableNotFound;;
+exception VarValCountMismatch;;
+let rec searchVars vars vals var = match vars, vals with
+  | [], [] -> None
+  | [], _ | _, [] -> raise VarValCountMismatch
+  | var'::vars', val'::vals' -> if var' = var then Some val'
+                                else searchVars vars' vals' var
+;;
 let rec applyEnv env var = match env with
   | EmptyEnv -> raise VariableNotFound
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
           else applyEnv env1 var
-  | ExtendEnvRec (fname, arg, body, env1) ->
-          if var = fname then ProcVal (Procedure (arg, body, env))
-          else applyEnv env1 var
+  | ExtendEnvRec (vars, vals, env1) ->
+          (match searchVars vars vals var with
+             | None -> applyEnv env1 var
+             | Some (arg, body) -> ProcVal (Procedure (arg, body, env)))
 ;;
 
 
