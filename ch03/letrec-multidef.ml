@@ -9,7 +9,7 @@ type expression =
   | LetExp of symbol * expression * expression
   | ProcExp of symbol * expression
   | CallExp of expression * expression
-  | LetRecExp of symbol * symbol * expression * expression
+  | LetRecExp of symbol list * (symbol * expression) list * expression
 ;;
 
 type environment =
@@ -87,8 +87,8 @@ let rec valueOf exp env = match exp with
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
-  | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env))
+  | LetRecExp (fnames, fargbodies, body) ->
+          valueOf body (ExtendEnvRec (fnames, fargbodies, env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
