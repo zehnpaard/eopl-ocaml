@@ -7,9 +7,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * expression
-  | CallExp of expression * expression
-  | LetRecExp of symbol * symbol * expression * expression
+  | ProcExp of symbol list * expression
+  | CallExp of expression * expression list
+  | LetRecExp of symbol * symbol list * expression * expression
 ;;
 
 type environment =
@@ -59,8 +59,8 @@ let rec applyEnv env var = match env with
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
           else applyEnv env1 var
-  | ExtendEnvRec (fname, arg, body, env1) ->
-          if var = fname then ProcVal (Procedure (arg, body, env))
+  | ExtendEnvRec (fname, args, body, env1) ->
+          if var = fname then ProcVal (Procedure (args, body, env))
           else applyEnv env1 var
   | ExtendEnvMulti (vars, vals, env1) ->
           (match searchVars vars vals var with
@@ -86,15 +86,16 @@ let rec valueOf exp env = match exp with
           applyEnv env var
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
-  | ProcExp (var, body) ->
-          ProcVal (Procedure (var, body, env))
+  | ProcExp (vars, body) ->
+          ProcVal (Procedure (vars, body, env))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
-  | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env))
-and applyProcedure p v = match p with
-  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+          let vals = List.map (fun x -> valueOf x env) in
+          applyProcedure p vals
+  | LetRecExp (fname, fargs, fbody, body) ->
+          valueOf body (ExtendEnvRec (fname, fargs, fbody, env))
+and applyProcedure p vals = match p with
+  | Procedure (vars, body, senv) -> valueOf body (ExtendEnvMulti (vars, vals, senv))
 ;;
 
 let valueOfProgram = function
