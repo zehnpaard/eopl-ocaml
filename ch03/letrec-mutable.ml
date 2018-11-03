@@ -15,7 +15,7 @@ type expression =
 type environment =
   | EmptyEnv
   | ExtendEnv of symbol * expVal * environment
-  | ExtendEnvRec of symbol * symbol * expression * environment
+  | ExtendEnvRec of symbol * expVal ref * environment
 and expVal =
   | NumVal of int
   | BoolVal of bool
@@ -51,8 +51,8 @@ let rec applyEnv env var = match env with
   | ExtendEnv (var1, val1, env1) ->
           if var = var1 then val1
           else applyEnv env1 var
-  | ExtendEnvRec (fname, arg, body, env1) ->
-          if var = fname then ProcVal (Procedure (arg, body, env))
+  | ExtendEnvRec (var1, ref1, env1) ->
+          if var = var1 then !ref1
           else applyEnv env1 var
 ;;
 
@@ -80,7 +80,9 @@ let rec valueOf exp env = match exp with
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
   | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env))
+          let ref1 = ref (NumVal 0) in
+          let env1 = ExtendEnvRec (fname, ref1, env) in
+          (ref1 := ProcVal (Procedure (farg, fbody, env1)); valueOf body env1)
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
