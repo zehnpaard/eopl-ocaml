@@ -18,6 +18,7 @@ and expVal =
   | NumVal of int
   | BoolVal of bool
   | ProcVal of procedure
+  | RefVal of int
 and procedure =
   | Procedure of symbol * expression * environment
 ;;
@@ -80,6 +81,12 @@ exception CannotConvertNonProcVal;;
 let expValToProc = function
   | ProcVal p -> p
   | _ -> raise CannotConvertNonProcVal
+;;
+
+exception CannotConvertNonRefVal;;
+let expValToRef = function
+  | RefVal n -> n
+  | _ -> raise CannotConvertNonRefVal
 ;;
 
 
