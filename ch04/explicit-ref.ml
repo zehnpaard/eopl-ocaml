@@ -57,6 +57,10 @@ let rec modifyStore s ref nv = match s with
           if n = ref then AppendStore (n, nv, store1)
           else AppendStore (n, v, modifyStore store1 ref nv)
 ;;
+let setref ref v =
+    let s = get_store () in
+    s := modifyStore !s ref v
+;;
 
 type program = Program of expression;;
 
