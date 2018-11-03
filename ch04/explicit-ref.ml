@@ -10,6 +10,7 @@ type expression =
   | ProcExp of symbol * expression
   | CallExp of expression * expression
   | NewRefExp of expression
+  | DerefExp of expression
 ;;
 
 type environment =
@@ -124,6 +125,8 @@ let rec valueOf exp env = match exp with
           applyProcedure p (valueOf arg env)
   | NewRefExp e ->
           RefVal (newRef (valueOf e env))
+  | DerefExp e ->
+          deref (expValToRef (valueOf e env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
