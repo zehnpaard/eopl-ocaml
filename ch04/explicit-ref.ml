@@ -9,6 +9,7 @@ type expression =
   | LetExp of symbol * expression * expression
   | ProcExp of symbol * expression
   | CallExp of expression * expression
+  | NewRefExp of expression
 ;;
 
 type environment =
@@ -32,7 +33,7 @@ let the_store = ref EmptyStore;;
 
 let getStore () = the_store;;
 let initializeStore = the_store := EmptyStore;;
-let new_ref v =
+let newRef v =
     let s = getStore () in
     let r = !s in
     let n = match r with
@@ -121,6 +122,8 @@ let rec valueOf exp env = match exp with
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
+  | NewRefExp e ->
+          RefVal (newRef (valueOf e env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
