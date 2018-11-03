@@ -29,10 +29,10 @@ type store =
 
 let the_store = ref EmptyStore;;
 
-let get_store () = the_store;;
-let initialize_store = the_store := EmptyStore;;
+let getStore () = the_store;;
+let initializeStore = the_store := EmptyStore;;
 let new_ref v =
-    let s = get_store () in
+    let s = getStore () in
     let r = !s in
     let n = match r with
               | EmptyStore -> 0
@@ -49,7 +49,7 @@ let rec applyStore s ref = match s with
           if n = ref then v
           else applyStore store1 ref
 ;;
-let deref ref = applyStore !(get_store ()) ref;;
+let deref ref = applyStore !(getStore ()) ref;;
 
 let rec modifyStore s ref nv = match s with
   | EmptyStore  -> raise StoreNotFound
@@ -58,7 +58,7 @@ let rec modifyStore s ref nv = match s with
           else AppendStore (n, v, modifyStore store1 ref nv)
 ;;
 let setref ref v =
-    let s = get_store () in
+    let s = getStore () in
     s := modifyStore !s ref v
 ;;
 
