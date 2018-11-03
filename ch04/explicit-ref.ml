@@ -27,7 +27,20 @@ type store =
   | AppendStore of int * expVal * store
 ;;
 
-let the_store = ref EmptyEnv;;
+let the_store = ref EmptyStore;;
+
+let get_store () = the_store;;
+let initialize_store = the_store := EmptyStore;;
+let new_ref v =
+    let s = get_store () in
+    let r = !s in
+    let n = match r with
+              | EmptyStore -> 0
+              | AppendStore (n, _, _) -> n
+    in
+    let newr = AppendStore (n+1, v, r) in
+    (s := newr; n+1)
+;;
 
 type program = Program of expression;;
 
