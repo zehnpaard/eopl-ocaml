@@ -42,6 +42,15 @@ let new_ref v =
     (s := newr; n+1)
 ;;
 
+exception StoreNotFound;;
+let rec applyStore s ref = match s with
+  | EmptyStore  -> raise StoreNotFound
+  | AppendStore (n, v, store1) ->
+          if n = ref then v
+          else applyStore store1 ref
+;;
+let deref ref = applyStore !(get_store ()) ref;;
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
