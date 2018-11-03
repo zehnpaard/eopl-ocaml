@@ -51,6 +51,13 @@ let rec applyStore s ref = match s with
 ;;
 let deref ref = applyStore !(get_store ()) ref;;
 
+let rec modifyStore s ref nv = match s with
+  | EmptyStore  -> raise StoreNotFound
+  | AppendStore (n, v, store1) ->
+          if n = ref then AppendStore (n, nv, store1)
+          else AppendStore (n, v, modifyStore store1 ref nv)
+;;
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
