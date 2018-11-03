@@ -22,6 +22,13 @@ and procedure =
   | Procedure of symbol * expression * environment
 ;;
 
+type store =
+  | EmptyStore
+  | AppendStore of int * expVal * store
+;;
+
+let the_store = ref EmptyEnv;;
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
