@@ -13,6 +13,8 @@ type expression =
   | NewPairExp of expression * expression
   | LeftOfPairExp of expression
   | RightOfPairExp of expression
+  | SetLeftOfPairExp of expression * expression
+  | SetRightOfPairExp of expression * expression
 ;;
 
 type environment =
@@ -146,10 +148,7 @@ let rec valueOf exp env = match exp with
           applyProcedure p (valueOf arg env)
   | AssignExp (var, exp1) ->
           let val1 = valueOf exp1 env in
-          begin
-              setRef (expValToRef (applyEnv env var)) val1;
-              val1;
-          end
+          (setRef (expValToRef (applyEnv env var)) val1; val1)
   | NewPairExp (e1, e2) ->
           let v1 = valueOf e1 env in
           let v2 = valueOf e2 env in
@@ -158,6 +157,14 @@ let rec valueOf exp env = match exp with
           leftOfPair (expValToMutablePair (valueOf e env))
   | RightOfPairExp e ->
           rightOfPair (expValToMutablePair (valueOf e env))
+  | SetLeftOfPairExp (pe, ve) ->
+          let pv = valueOf pe env in
+          let vv = valueOf ve env in
+          (setLeftOfPair (expValToMutablePair pv) vv; vv)
+  | SetRightOfPairExp (pe, ve) ->
+          let pv = valueOf pe env in
+          let vv = valueOf ve env in
+          (setRightOfPair (expValToMutablePair pv) vv; vv)
 
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) ->
