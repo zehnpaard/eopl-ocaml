@@ -40,7 +40,7 @@ let newRef v =
               | AppendStore (n, _, _) -> n
     in
     let newr = AppendStore (n+1, v, r) in
-    (s := newr; n+1)
+    (s := newr; RefVal (n+1))
 ;;
 
 exception StoreNotFound;;
@@ -113,9 +113,9 @@ let rec valueOf exp env = match exp with
           then valueOf e2 env
           else valueOf e3 env
   | VarExp var ->
-          applyEnv env var
+          deref (expValToRef (applyEnv env var))
   | LetExp (var, e, body) ->
-          valueOf body (ExtendEnv (var, (valueOf e env), env))
+          valueOf body (ExtendEnv (var, newRef (valueOf e env), env))
   | ProcExp (var, body) ->
           ProcVal (Procedure (var, body, env))
   | CallExp (func, arg) ->
@@ -123,7 +123,7 @@ let rec valueOf exp env = match exp with
           applyProcedure p (valueOf arg env)
 
 and applyProcedure p v = match p with
-  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, newRef v, senv))
 ;;
 
 let valueOfProgram = function
