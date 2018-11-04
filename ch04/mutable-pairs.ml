@@ -22,6 +22,8 @@ and expVal =
   | RefVal of int
 and procedure =
   | Procedure of symbol * expression * environment
+and mutablePair =
+  | MutablePair of int * int
 ;;
 
 type store =
@@ -63,6 +65,15 @@ let setRef ref v =
     let s = getStore () in
     s := modifyStore !s ref v
 ;;
+
+
+let makePair v1 v2 = MutablePair (newRef v1, newRef v2);;
+let leftOfPair = function MutablePair (l, _) -> deref l;;
+let rightOfPair = function MutablePair (_, r) -> deref r;;
+let setLeftOfPair p v = match p with
+  | MutablePair (l, _) -> setRef l v;;
+let setRightOfPair p v = match p with
+  | MutablePair (_, r) -> setRef r v;;
 
 type program = Program of expression;;
 
