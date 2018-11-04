@@ -11,6 +11,8 @@ type expression =
   | CallExp of expression * expression
   | AssignExp of symbol * expression
   | NewPairExp of expression * expression
+  | LeftOfPairExp of expression
+  | RightOfPairExp of expression
 ;;
 
 type environment =
@@ -103,6 +105,12 @@ let expValToRef = function
   | _ -> raise CannotConvertNonRefVal
 ;;
 
+exception CannotConvertNonMutablePairVal;;
+let expValToMutablePair = function
+  | MutablePairVal p -> p
+  | _ -> raise CannotConvertNonMutablePairVal
+;;
+
 
 exception VariableNotFound;;
 let rec applyEnv env var = match env with
@@ -146,6 +154,10 @@ let rec valueOf exp env = match exp with
           let v1 = valueOf e1 env in
           let v2 = valueOf e2 env in
           MutablePairVal (makePair v1 v2)
+  | LeftOfPairExp e ->
+          leftOfPair (expValToMutablePair (valueOf e env))
+  | RightOfPairExp e ->
+          rightOfPair (expValToMutablePair (valueOf e env))
 
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) ->
