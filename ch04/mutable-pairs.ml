@@ -10,6 +10,7 @@ type expression =
   | ProcExp of symbol * expression
   | CallExp of expression * expression
   | AssignExp of symbol * expression
+  | NewPairExp of expression * expression
 ;;
 
 type environment =
@@ -20,6 +21,7 @@ and expVal =
   | BoolVal of bool
   | ProcVal of procedure
   | RefVal of int
+  | MutablePairVal of mutablePair
 and procedure =
   | Procedure of symbol * expression * environment
 and mutablePair =
@@ -140,6 +142,10 @@ let rec valueOf exp env = match exp with
               setRef (expValToRef (applyEnv env var)) val1;
               val1;
           end
+  | NewPairExp (e1, e2) ->
+          let v1 = valueOf e1 env in
+          let v2 = valueOf e2 env in
+          MutablePairVal (makePair v1 v2)
 
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) ->
