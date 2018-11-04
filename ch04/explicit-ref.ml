@@ -11,6 +11,7 @@ type expression =
   | CallExp of expression * expression
   | NewRefExp of expression
   | DerefExp of expression
+  | SetRefExp of expression * expression
 ;;
 
 type environment =
@@ -127,6 +128,11 @@ let rec valueOf exp env = match exp with
           RefVal (newRef (valueOf e env))
   | DerefExp e ->
           deref (expValToRef (valueOf e env))
+  | SetRefExp (re, ve) ->
+          let r = expValToRef (valueOf re env) in
+          let v = valueOf ve env in
+          (setref r v; v)
+
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
