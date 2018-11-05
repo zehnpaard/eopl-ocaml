@@ -64,9 +64,9 @@ let rec applyCont cont val1 = match cont with
   | EndCont -> val1
 ;;
 
-let rec valueOf exp env = match exp with
+let rec valueOf exp env cont = match exp with
   | ConstExp n ->
-          NumVal n
+          applyCont cont (NumVal n)
   | DiffExp (e1, e2) ->
           let n1 = expValToNum (valueOf e1 env) in
           let n2 = expValToNum (valueOf e2 env) in
@@ -78,22 +78,22 @@ let rec valueOf exp env = match exp with
           then valueOf e2 env
           else valueOf e3 env
   | VarExp var ->
-          applyEnv env var
+          applyCont cont (applyEnv env var)
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
   | ProcExp (var, body) ->
-          ProcVal (Procedure (var, body, env))
+          applyCont cont (ProcVal (Procedure (var, body, env)))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
   | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env))
+          valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
 ;;
 
 let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv
+  | Program e -> valueOf e EmptyEnv EndCont
 ;;
 
 
