@@ -20,11 +20,10 @@ and expVal =
   | NumVal of int
   | BoolVal of bool
   | ProcVal of procedure
+  | TrampolineVal of procedure * expVal * continuation
 and procedure =
   | Procedure of symbol * expression * environment
-;;
-
-type continuation =
+and continuation =
   | EndCont
   | ZeroCont of continuation
   | LetCont of symbol * expression * environment * continuation
@@ -107,11 +106,22 @@ and applyCont cont val1 = match cont with
   | CallFuncCont (arg, env, sc) ->
           valueOf arg env (CallArgCont (val1, sc))
   | CallArgCont (v1, sc) ->
-          applyProcedure (expValToProc v1) val1 sc
+          TrampolineVal (expValToProc v1, val1, sc)
+;;
+
+let trampoline v1 =
+    let v = ref v1 in
+    let finished = ref false in
+    while not !finished do
+        match !v with
+          | TrampolineVal (p, v2, sc) -> v := applyProcedure p v2 sc
+          | _ -> finished := true
+    done;
+    !v
 ;;
 
 let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv EndCont
+  | Program e -> trampoline (valueOf e EmptyEnv EndCont)
 ;;
 
 
