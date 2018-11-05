@@ -26,6 +26,7 @@ and procedure =
 
 type continuation =
   | EndCont
+  | ZeroCont of continuation
 ;;
 
 type program = Program of expression;;
@@ -62,6 +63,9 @@ let rec applyEnv env var = match env with
 
 let rec applyCont cont val1 = match cont with
   | EndCont -> val1
+  | ZeroCont sc ->
+          let val2 = BoolVal (0 = expValToNum val1) in
+          applyCont sc val2
 ;;
 
 let rec valueOf exp env cont = match exp with
@@ -72,7 +76,7 @@ let rec valueOf exp env cont = match exp with
           let n2 = expValToNum (valueOf e2 env) in
           NumVal (n1 - n2)
   | ZeroExp e ->
-          BoolVal (0 = expValToNum (valueOf e env))
+          valueOf e env (ZeroCont cont)
   | IfExp (e1, e2, e3) ->
           if expValToBool (valueOf e1 env)
           then valueOf e2 env
