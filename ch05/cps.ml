@@ -24,6 +24,10 @@ and procedure =
   | Procedure of symbol * expression * environment
 ;;
 
+type continuation =
+  | EndCont
+;;
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
@@ -56,6 +60,9 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
+let rec applyCont cont val1 = match cont with
+  | EndCont -> val1
+;;
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
