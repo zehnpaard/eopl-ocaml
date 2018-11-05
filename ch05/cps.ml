@@ -27,7 +27,8 @@ and procedure =
 type continuation =
   | EndCont
   | ZeroCont of continuation
-  | LetCont of symbol * expression * env * continuation
+  | LetCont of symbol * expression * environment * continuation
+  | IfCont of expression * expression * environment * continuation
 ;;
 
 type program = Program of expression;;
@@ -69,6 +70,10 @@ let rec applyCont cont val1 = match cont with
           applyCont sc val2
   | LetCont var1 body env sc ->
           valueOf body (ExtendEnv var1 val1 env) sc
+  | IfCont e2 e3 env sc ->
+          if expValToBool val1
+          then valueOf e2 env sc
+          else valueOf e3 env sc
 ;;
 
 let rec valueOf exp env cont = match exp with
@@ -81,9 +86,7 @@ let rec valueOf exp env cont = match exp with
   | ZeroExp e ->
           valueOf e env (ZeroCont cont)
   | IfExp (e1, e2, e3) ->
-          if expValToBool (valueOf e1 env)
-          then valueOf e2 env
-          else valueOf e3 env
+          valueOf e1 env (IfCont e2 e3 env cont)
   | VarExp var ->
           applyCont cont (applyEnv env var)
   | LetExp (var, e, body) ->
