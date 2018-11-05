@@ -154,7 +154,11 @@ let rec valueOf exp env = match exp with
           ProcVal (Procedure (var, body, env))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
+          let v = match arg with
+                    | VarExp var -> applyEnv env var
+                    | _ -> RefVal (newRef (ThunkVal (Thunk (arg, env))))
+          in
+          applyProcedure p v
   | AssignExp (var, exp1) ->
           let val1 = valueOf exp1 env in
           (setRef (expValToRef (applyEnv env var)) val1; val1)
@@ -177,8 +181,7 @@ let rec valueOf exp env = match exp with
 
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) ->
-          let rv = RefVal (newRef v) in
-          valueOf body (ExtendEnv (var, rv, senv))
+          valueOf body (ExtendEnv (var, v, senv))
 ;;
 
 let valueOfProgram = function
