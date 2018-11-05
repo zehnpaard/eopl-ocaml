@@ -26,10 +26,13 @@ and expVal =
   | ProcVal of procedure
   | RefVal of int
   | MutablePairVal of mutablePair
+  | ThunkVal of thunk
 and procedure =
   | Procedure of symbol * expression * environment
 and mutablePair =
   | MutablePair of int * int
+and thunk =
+  | Thunk of expression * environment
 ;;
 
 type store =
@@ -111,6 +114,12 @@ exception CannotConvertNonMutablePairVal;;
 let expValToMutablePair = function
   | MutablePairVal p -> p
   | _ -> raise CannotConvertNonMutablePairVal
+;;
+
+exception CannotConvertNonThunkVal;;
+let expValToThunk = function
+  | ThunkVal n -> n
+  | _ -> raise CannotConvertNonThunkVal
 ;;
 
 
