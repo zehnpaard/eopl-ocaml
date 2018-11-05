@@ -146,7 +146,10 @@ let rec valueOf exp env = match exp with
           then valueOf e2 env
           else valueOf e3 env
   | VarExp var ->
-          deref (expValToRef (applyEnv env var))
+          let v = deref (expValToRef (applyEnv env var)) in
+          (match v with
+             | ThunkVal (Thunk (exp1, env1)) -> valueOf exp1 env1
+             | _ -> v)
   | LetExp (var, e, body) ->
           let rv = RefVal (newRef (valueOf e env)) in
           valueOf body (ExtendEnv (var, rv, env))
