@@ -63,19 +63,6 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
-let rec applyCont cont val1 = match cont with
-  | EndCont -> val1
-  | ZeroCont sc ->
-          let val2 = BoolVal (0 = expValToNum val1) in
-          applyCont sc val2
-  | LetCont var1 body env sc ->
-          valueOf body (ExtendEnv var1 val1 env) sc
-  | IfCont e2 e3 env sc ->
-          if expValToBool val1
-          then valueOf e2 env sc
-          else valueOf e3 env sc
-;;
-
 let rec valueOf exp env cont = match exp with
   | ConstExp n ->
           applyCont cont (NumVal n)
@@ -100,6 +87,19 @@ let rec valueOf exp env cont = match exp with
           valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+and applyCont cont val1 = match cont with
+  | EndCont -> val1
+  | ZeroCont sc ->
+          let val2 = BoolVal (0 = expValToNum val1) in
+          applyCont sc val2
+  | LetCont var1 body env sc ->
+          valueOf body (ExtendEnv var1 val1 env) sc
+  | IfCont e2 e3 env sc ->
+          if expValToBool val1
+          then valueOf e2 env sc
+          else valueOf e3 env sc
+;;
+
 ;;
 
 let valueOfProgram = function
