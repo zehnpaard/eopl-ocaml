@@ -29,6 +29,8 @@ type continuation =
   | ZeroCont of continuation
   | LetCont of symbol * expression * environment * continuation
   | IfCont of expression * expression * environment * continuation
+  | Diff1Cont of expression * environment * continuation
+  | Diff2Cont of expVal * continuation
 ;;
 
 type program = Program of expression;;
@@ -67,9 +69,7 @@ let rec valueOf exp env cont = match exp with
   | ConstExp n ->
           applyCont cont (NumVal n)
   | DiffExp (e1, e2) ->
-          let n1 = expValToNum (valueOf e1 env) in
-          let n2 = expValToNum (valueOf e2 env) in
-          NumVal (n1 - n2)
+          valueOf e1 env (Diff1Cont e2 env cont)
   | ZeroExp e ->
           valueOf e env (ZeroCont cont)
   | IfExp (e1, e2, e3) ->
@@ -98,6 +98,10 @@ and applyCont cont val1 = match cont with
           if expValToBool val1
           then valueOf e2 env sc
           else valueOf e3 env sc
+  | Diff1Cont e2 env sc ->
+          valueOf e2 env (Diff2Cont v1 sc)
+  | Diff2Cont v1 sc ->
+          applyCont sc (NumVal (v1 - val1))
 ;;
 
 ;;
