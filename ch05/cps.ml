@@ -31,6 +31,8 @@ type continuation =
   | IfCont of expression * expression * environment * continuation
   | Diff1Cont of expression * environment * continuation
   | Diff2Cont of expVal * continuation
+  | CallFuncCont of expression * environment * continuation
+  | CallArgCont of expVal * continuation
 ;;
 
 type program = Program of expression;;
@@ -81,12 +83,12 @@ let rec valueOf exp env cont = match exp with
   | ProcExp (var, body) ->
           applyCont cont (ProcVal (Procedure (var, body, env)))
   | CallExp (func, arg) ->
-          let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
+          valueOf func env (CallFuncCont arg env cont)
   | LetRecExp (fname, farg, fbody, body) ->
           valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
-and applyProcedure p v = match p with
-  | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
+and applyProcedure p v cont = match p with
+  | Procedure (var, body, senv) sc ->
+          valueOf body (ExtendEnv (var, v, senv)) cont
 and applyCont cont val1 = match cont with
   | EndCont -> val1
   | ZeroCont sc ->
@@ -102,8 +104,10 @@ and applyCont cont val1 = match cont with
           valueOf e2 env (Diff2Cont v1 sc)
   | Diff2Cont v1 sc ->
           applyCont sc (NumVal (v1 - val1))
-;;
-
+  | CallFuncCont arg env sc ->
+          valueOf arg env (CallArgCont (val1, sc))
+  | CallArgCont v1 sc ->
+          applyProcedure (expValToProc v1) val1 sc
 ;;
 
 let valueOfProgram = function
