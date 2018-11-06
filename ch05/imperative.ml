@@ -141,10 +141,10 @@ and applyCont () = match !cont with
               val1 := BoolVal (0 = expValToNum !val1);
               applyCont ()
           end
-  | LetCont (var1, body, env, sc) ->
+  | LetCont (var1, body, senv, sc) ->
           begin
               cont := sc;
-              env := ExtendEnv (var1, !val1, !env);
+              env := ExtendEnv (var1, !val1, senv);
               exp := body;
               valueOf ()
           end
