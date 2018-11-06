@@ -76,23 +76,56 @@ let rec applyEnv env var = match env with
 
 let rec valueOf () = match !exp with
   | ConstExp n ->
-          applyCont cont (NumVal n)
+          begin
+              val1 := NumVal n;
+              applyCont ()
+          end
   | DiffExp (e1, e2) ->
-          valueOf e1 env (Diff1Cont (e2, env, cont))
+          begin
+              cont := Diff1Cont (e2, !env, !cont);
+              exp := e1;
+              valueOf ()
+          end
   | ZeroExp e ->
-          valueOf e env (ZeroCont cont)
+          begin
+              cont := ZeroCont !cont;
+              exp := e;
+              valueOf ()
+          end
   | IfExp (e1, e2, e3) ->
-          valueOf e1 env (IfCont (e2, e3, env, cont))
+          begin
+              cont := IfCont (e2, e3, !env, !cont);
+              exp := e1;
+              valueOf ()
+          end
   | VarExp var ->
-          applyCont cont (applyEnv env var)
+          begin
+              val1 := applyEnv !env var;
+              applyCont ()
+          end
   | LetExp (var, e, body) ->
-          valueOf e env (LetCont (var, body, env, cont))
+          begin
+              cont := LetCont (var, body, !env, !cont);
+              exp := e;
+              valueOf ()
+          end
   | ProcExp (var, body) ->
-          applyCont cont (ProcVal (Procedure (var, body, env)))
+          begin
+              val1 := ProcVal (Procedure (var, body, !env));
+              applyCont ()
+          end
   | CallExp (func, arg) ->
-          valueOf func env (CallFuncCont (arg, env, cont))
+          begin
+              cont := CallFuncCont (arg, !env, !cont);
+              exp := func;
+              valueOf ()
+          end
   | LetRecExp (fname, farg, fbody, body) ->
-          valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
+          begin
+              env := ExtendEnvRec (fname, farg, fbody, !env);
+              exp := body;
+              valueOf ()
+          end
 and applyProcedure () = match !proc1 with
   | Procedure (var, body, senv) ->
           valueOf body (ExtendEnv (var, v, senv)) cont
