@@ -37,6 +37,13 @@ type continuation =
 
 type program = Program of expression;;
 
+let exp = ref (ConstExp 0);;
+let env = ref EmptyEnv;;
+let cont = ref EndCont;;
+let val1 = ref (NumVal 0);;
+let proc1 = ref (Procedure (Symbol "x", ConstExp 0, EmptyEnv));;
+
+
 exception CannotConvertNonNumVal;;
 let expValToNum = function
   | NumVal v -> v
