@@ -134,24 +134,50 @@ and applyProcedure () = match !proc1 with
               valueOf ()
           end
 and applyCont () = match !cont with
-  | EndCont -> val1
+  | EndCont -> !val1
   | ZeroCont sc ->
-          let val2 = BoolVal (0 = expValToNum val1) in
-          applyCont sc val2
+          begin
+              cont := sc;
+              val1 := BoolVal (0 = expValToNum !val1);
+              applyCont ()
+          end
   | LetCont (var1, body, env, sc) ->
-          valueOf body (ExtendEnv (var1, val1, env)) sc
+          begin
+              cont := sc;
+              env := ExtendEnv (var1, !val1, !env);
+              exp := body;
+              valueOf ()
+          end
   | IfCont (e2, e3, env, sc) ->
-          if expValToBool val1
-          then valueOf e2 env sc
-          else valueOf e3 env sc
+          begin
+              cont := sc;
+              exp := if expValToBool !val1 then e2 else e3;
+              valueOf ()
+          end
   | Diff1Cont (e2, env, sc) ->
-          valueOf e2 env (Diff2Cont (val1, sc))
+          begin
+              cont := Diff2Cont (!val1, sc);
+              exp := e2;
+              valueOf ()
+          end
   | Diff2Cont (v1, sc) ->
-          applyCont sc (NumVal (expValToNum v1 - expValToNum val1))
+          begin
+              cont := sc;
+              val1 := NumVal (expValToNum v1 - expValToNum !val1);
+              applyCont ()
+          end
   | CallFuncCont (arg, env, sc) ->
-          valueOf arg env (CallArgCont (val1, sc))
+          begin
+              cont := CallArgCont (!val1, sc);
+              exp := arg;
+              valueOf ()
+          end
   | CallArgCont (v1, sc) ->
-          applyProcedure (expValToProc v1) val1 sc
+          begin
+              cont := sc;
+              proc1 := expValToProc v1;
+              applyProcedure ()
+          end
 ;;
 
 let valueOfProgram = function
