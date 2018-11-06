@@ -118,7 +118,13 @@ and applyCont cont val1 = match cont with
 ;;
 
 let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv EndCont
+  | Program e ->
+          begin
+              cont := EndCont;
+              env := EmptyEnv;
+              exp := e;
+              valueOf ()
+          end
 ;;
 
 
