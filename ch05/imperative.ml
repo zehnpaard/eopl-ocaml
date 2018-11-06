@@ -128,7 +128,11 @@ let rec valueOf () = match !exp with
           end
 and applyProcedure () = match !proc1 with
   | Procedure (var, body, senv) ->
-          valueOf body (ExtendEnv (var, v, senv)) cont
+          begin
+              env := ExtendEnv (var, !val1, senv);
+              exp := body;
+              valueOf ()
+          end
 and applyCont () = match !cont with
   | EndCont -> val1
   | ZeroCont sc ->
