@@ -74,7 +74,7 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
-let rec valueOf exp env cont = match exp with
+let rec valueOf () = match !exp with
   | ConstExp n ->
           applyCont cont (NumVal n)
   | DiffExp (e1, e2) ->
@@ -93,10 +93,10 @@ let rec valueOf exp env cont = match exp with
           valueOf func env (CallFuncCont (arg, env, cont))
   | LetRecExp (fname, farg, fbody, body) ->
           valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
-and applyProcedure p v cont = match p with
+and applyProcedure () = match !proc1 with
   | Procedure (var, body, senv) ->
           valueOf body (ExtendEnv (var, v, senv)) cont
-and applyCont cont val1 = match cont with
+and applyCont () = match !cont with
   | EndCont -> val1
   | ZeroCont sc ->
           let val2 = BoolVal (0 = expValToNum val1) in
