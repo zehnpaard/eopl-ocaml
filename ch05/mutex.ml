@@ -14,6 +14,7 @@ type expression =
   | SpawnExp of expression
   | MutexExp
   | WaitExp of expression
+  | SignalExp of expression
 ;;
 
 type environment =
@@ -45,6 +46,7 @@ type continuation =
   | EndSubThreadCont
   | SpawnCont of continuation
   | WaitCont of continuation
+  | SignalCont of continuation
 ;;
 
 type store =
@@ -126,7 +128,6 @@ let isTimeExpired () =
 let setFinalAnswer v =
     finalAnswer := v
 ;;
-
 
 
 let newMutex () = Mutex (ref false, Queue.create ());;
@@ -216,6 +217,8 @@ let rec valueOf exp env cont = match exp with
           applyCont cont (MutexVal (newMutex ()))
   | WaitExp e ->
           valueOf e env (WaitCont cont)
+  | SignalExp e ->
+          valueOf e env (SignalCont cont)
 
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
@@ -265,6 +268,8 @@ and applyCont' cont val1 = match cont with
           (placeOnReadyQueue newThread; applyCont sc (NumVal 0))
   | WaitCont sc ->
           waitForMutex (expValToMutex val1) (fun () -> applyCont sc (NumVal 0))
+  | SignalCont sc ->
+          signalMutex (expValToMutex val1) (fun () -> applyCont sc (NumVal 0))
 ;;
 
 let valueOfProgram = function Program e ->
