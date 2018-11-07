@@ -76,6 +76,47 @@ let setRef ref v =
     s := modifyStore !s ref v
 ;;
 
+
+let readyQueue = Queue.create ();;
+let maxTimeSlice = ref 0;;
+let timeRemaining = ref 0;;
+let finalAnswer = ref (NumVal 0);;
+
+let initializeScheduler ticks =
+    begin
+        Queue.clear readyQueue;
+        maxTimeSlice := ticks;
+        timeRemaining := !maxTimeSlice;
+        finalAnswer := NumVal 0;
+    end
+;;
+
+let placeOnReadyQueue thread1 =
+    Queue.add thread1 readyQueue
+;;
+
+let runNextThread () =
+    if Queue.is_empty readyQueue then !finalAnswer
+    else
+        begin
+            timeRemaining := !maxTimeSlice;
+            (Queue.take readyQueue) ()
+        end
+;;
+
+let decrementTimer () =
+    timeRemaining := !timeRemaining - 1
+;;
+
+let isTimeExpired () =
+    0 = !timeRemaining
+;;
+
+let setFinalAnswer v =
+    finalAnswer := v
+;;
+
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
