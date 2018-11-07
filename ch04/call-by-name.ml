@@ -43,7 +43,7 @@ type store =
 let the_store = ref EmptyStore;;
 
 let getStore () = the_store;;
-let initializeStore = the_store := EmptyStore;;
+let initializeStore () = the_store := EmptyStore;;
 let newRef v =
     let s = getStore () in
     let r = !s in
@@ -187,8 +187,11 @@ and applyProcedure p v = match p with
           valueOf body (ExtendEnv (var, v, senv))
 ;;
 
-let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv
+let valueOfProgram = function Program e ->
+    begin
+        initializeStore ();
+        valueOf e EmptyEnv
+    end
 ;;
 
 

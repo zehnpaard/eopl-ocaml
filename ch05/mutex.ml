@@ -48,7 +48,7 @@ type store =
 let the_store = ref EmptyStore;;
 
 let getStore () = the_store;;
-let initializeStore = the_store := EmptyStore;;
+let initializeStore () = the_store := EmptyStore;;
 let newRef v =
     let s = getStore () in
     let r = !s in
@@ -229,7 +229,7 @@ and applyCont' cont val1 = match cont with
 
 let valueOfProgram = function Program e ->
     begin
-        initializeStore;
+        initializeStore ();
         initializeScheduler 10;
         valueOf e EmptyEnv EndMainThreadCont
     end
