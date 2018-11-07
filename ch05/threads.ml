@@ -34,6 +34,7 @@ type continuation =
   | CallFuncCont of expression * environment * continuation
   | CallArgCont of expVal * continuation
   | AssignCont of symbol * environment * continuation
+  | EndMainThreadCont
 ;;
 
 type store =
@@ -210,13 +211,15 @@ and applyCont' cont val1 = match cont with
               setRef (expValToRef (applyEnv env var)) val1;
               applyCont sc val1
           end
+  | EndMainThreadCont ->
+          (setFinalAnswer val1; runNextThread ())
 ;;
 
 let valueOfProgram = function Program e ->
     begin
         initializeStore;
         initializeScheduler 10;
-        valueOf e EmptyEnv EndCont
+        valueOf e EmptyEnv EndMainThreadCont
     end
 ;;
 
