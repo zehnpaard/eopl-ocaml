@@ -24,6 +24,18 @@ and procedure =
   | Procedure of symbol * expression * environment
 ;;
 
+type continuation =
+  | EndCont
+  | ZeroCont of continuation
+  | LetCont of symbol * expression * environment * continuation
+  | IfCont of expression * expression * environment * continuation
+  | Diff1Cont of expression * environment * continuation
+  | Diff2Cont of expVal * continuation
+  | CallFuncCont of expression * environment * continuation
+  | CallArgCont of expVal * continuation
+  | AssignCont of symbol * environment * continuation
+;;
+
 type store =
   | EmptyStore
   | AppendStore of int * expVal * store
@@ -100,44 +112,60 @@ let rec applyEnv env var = match env with
 ;;
 
 
-let rec valueOf exp env = match exp with
+let rec valueOf exp env cont = match exp with
   | ConstExp n ->
-          NumVal n
+          applyCont cont (NumVal n)
   | DiffExp (e1, e2) ->
-          let n1 = expValToNum (valueOf e1 env) in
-          let n2 = expValToNum (valueOf e2 env) in
-          NumVal (n1 - n2)
+          valueOf e1 env (Diff1Cont (e2, env, cont))
   | ZeroExp e ->
-          BoolVal (0 = expValToNum (valueOf e env))
+          valueOf e env (ZeroCont cont)
   | IfExp (e1, e2, e3) ->
-          if expValToBool (valueOf e1 env)
-          then valueOf e2 env
-          else valueOf e3 env
+          valueOf e1 env (IfCont (e2, e3, env, cont))
   | VarExp var ->
-          deref (expValToRef (applyEnv env var))
+          applyCont cont (deref (expValToRef (applyEnv env var)))
   | LetExp (var, e, body) ->
-          let rv = RefVal (newRef (valueOf e env)) in
-          valueOf body (ExtendEnv (var, rv, env))
+          valueOf e env (LetCont (var, body, env, cont))
   | ProcExp (var, body) ->
-          ProcVal (Procedure (var, body, env))
+          applyCont cont (ProcVal (Procedure (var, body, env)))
   | CallExp (func, arg) ->
-          let p = expValToProc (valueOf func env) in
-          applyProcedure p (valueOf arg env)
+          valueOf func env (CallFuncCont (arg, env, cont))
   | AssignExp (var, exp1) ->
-          let val1 = valueOf exp1 env in
-          begin
-              setRef (expValToRef (applyEnv env var)) val1;
-              val1;
-          end
+          valueOf exp1 env (AssignCont (var, env, cont))
 
-and applyProcedure p v = match p with
+and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
           let rv = RefVal (newRef v) in
-          valueOf body (ExtendEnv (var, rv, senv))
+          valueOf body (ExtendEnv (var, rv, senv)) cont
+
+and applyCont cont val1 = match cont with
+  | EndCont -> val1
+  | ZeroCont sc ->
+          let val2 = BoolVal (0 = expValToNum val1) in
+          applyCont sc val2
+  | LetCont (var1, body, env, sc) ->
+          let rv = RefVal (newRef val1) in
+          valueOf body (ExtendEnv (var1, rv, env)) sc
+  | IfCont (e2, e3, env, sc) ->
+          if expValToBool val1
+          then valueOf e2 env sc
+          else valueOf e3 env sc
+  | Diff1Cont (e2, env, sc) ->
+          valueOf e2 env (Diff2Cont (val1, sc))
+  | Diff2Cont (v1, sc) ->
+          applyCont sc (NumVal (expValToNum v1 - expValToNum val1))
+  | CallFuncCont (arg, env, sc) ->
+          valueOf arg env (CallArgCont (val1, sc))
+  | CallArgCont (v1, sc) ->
+          applyProcedure (expValToProc v1) val1 sc
+  | AssignCont (var, env, sc) ->
+          begin
+              setRef (expValToRef (applyEnv env var)) val1;
+              applyCont sc val1
+          end
 ;;
 
 let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv
+  | Program e -> valueOf e EmptyEnv EndCont
 ;;
 
 
