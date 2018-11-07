@@ -11,6 +11,7 @@ type expression =
   | CallExp of expression * expression
   | LetRecExp of symbol * symbol * expression * expression
   | TryExp of expression * symbol * expression
+  | RaiseExp of expression
 ;;
 
 type environment =
@@ -35,6 +36,7 @@ type continuation =
   | CallFuncCont of expression * environment * continuation
   | CallArgCont of expVal * continuation
   | TryCont of symbol * expression * environment * continuation
+  | RaiseCont of continuation
 ;;
 
 type program = Program of expression;;
@@ -90,6 +92,8 @@ let rec valueOf exp env cont = match exp with
           valueOf body (ExtendEnvRec (fname, farg, fbody, env)) cont
   | TryExp (mainbody, excvar, excbody) ->
           valueOf mainbody env (TryCont (excvar, excbody, env, cont))
+  | RaiseExp e ->
+          valueOf e env (RaiseCont cont)
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
           valueOf body (ExtendEnv (var, v, senv)) cont
@@ -114,6 +118,8 @@ and applyCont cont val1 = match cont with
           applyProcedure (expValToProc v1) val1 sc
   | TryCont (var1, exp1, env1, sc) ->
           applyCont sc val1
+  | RaiseCont sc ->
+          applyHandler val1 sc
 ;;
 
 let valueOfProgram = function
