@@ -1,5 +1,6 @@
 type symbol = Symbol of string;;
 
+
 type expression =
   | ConstExp of int
   | DiffExp of expression * expression
@@ -11,6 +12,7 @@ type expression =
   | CallExp of expression * expression
   | AssignExp of symbol * expression
   | SpawnExp of expression
+  | MutexExp
 ;;
 
 type environment =
@@ -21,8 +23,11 @@ and expVal =
   | BoolVal of bool
   | ProcVal of procedure
   | RefVal of int
+  | MutexVal of mutex
 and procedure =
   | Procedure of symbol * expression * environment
+and mutex =
+  | Mutex of bool ref * (unit -> expVal) Queue.t
 ;;
 
 type continuation =
@@ -121,7 +126,6 @@ let setFinalAnswer v =
 ;;
 
 
-type mutex = Mutex of bool ref * (unit -> expVal) Queue.t;;
 
 let newMutex () = Mutex (ref false, Queue.create ());;
 
@@ -169,6 +173,12 @@ let expValToRef = function
   | _ -> raise CannotConvertNonRefVal
 ;;
 
+exception CannotConvertNonMutexVal;;
+let expValToMutex = function
+  | MutexVal n -> n
+  | _ -> raise CannotConvertNonMutexVal
+;;
+
 
 exception VariableNotFound;;
 let rec applyEnv env var = match env with
@@ -200,6 +210,8 @@ let rec valueOf exp env cont = match exp with
           valueOf exp1 env (AssignCont (var, env, cont))
   | SpawnExp e ->
           valueOf e env (SpawnCont cont)
+  | MutexExp ->
+          applyCont cont (MutexVal (newMutex ()))
 
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
