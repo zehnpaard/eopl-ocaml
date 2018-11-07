@@ -71,6 +71,8 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
+exception UncaughtExceptionRaised;;
+exception ExceptionRaisedWhileGeneratingException;;
 let rec valueOf exp env cont = match exp with
   | ConstExp n ->
           applyCont cont (NumVal n)
@@ -119,7 +121,19 @@ and applyCont cont val1 = match cont with
   | TryCont (var1, exp1, env1, sc) ->
           applyCont sc val1
   | RaiseCont sc ->
-          applyHandler val1 sc
+          applyExceptionHandler val1 sc
+and applyExceptionHandler val1 = function
+  | TryCont (var1, exp1, env1, sc) ->
+          valueOf exp1 (ExtendEnv (var1, val1, env1)) sc
+  | EndCont -> raise UncaughtExceptionRaised
+  | RaiseCont sc -> raise ExceptionRaisedWhileGeneratingException
+  | ZeroCont sc -> applyExceptionHandler val1 sc
+  | LetCont (_, _, _, sc) -> applyExceptionHandler val1 sc
+  | IfCont (_, _, _, sc) -> applyExceptionHandler val1 sc
+  | Diff1Cont (_, _, sc) -> applyExceptionHandler val1 sc
+  | Diff2Cont (_, sc) -> applyExceptionHandler val1 sc
+  | CallFuncCont (_, _, sc) -> applyExceptionHandler val1 sc
+  | CallArgCont (_, sc) -> applyExceptionHandler val1 sc
 ;;
 
 let valueOfProgram = function
