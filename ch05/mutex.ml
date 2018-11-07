@@ -1,6 +1,5 @@
 type symbol = Symbol of string;;
 
-
 type expression =
   | ConstExp of int
   | DiffExp of expression * expression
