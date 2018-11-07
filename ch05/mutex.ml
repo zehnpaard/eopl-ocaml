@@ -11,6 +11,9 @@ type expression =
   | CallExp of expression * expression
   | AssignExp of symbol * expression
   | SpawnExp of expression
+  | MutexExp
+  | WaitExp of expression
+  | SignalExp of expression
 ;;
 
 type environment =
@@ -21,8 +24,11 @@ and expVal =
   | BoolVal of bool
   | ProcVal of procedure
   | RefVal of int
+  | MutexVal of mutex
 and procedure =
   | Procedure of symbol * expression * environment
+and mutex =
+  | Mutex of bool ref * (unit -> expVal) Queue.t
 ;;
 
 type continuation =
@@ -38,6 +44,8 @@ type continuation =
   | EndMainThreadCont
   | EndSubThreadCont
   | SpawnCont of continuation
+  | WaitCont of continuation
+  | SignalCont of continuation
 ;;
 
 type store =
@@ -121,6 +129,26 @@ let setFinalAnswer v =
 ;;
 
 
+let newMutex () = Mutex (ref false, Queue.create ());;
+
+let waitForMutex m th = match m with
+  | Mutex (isClosed, waitingThreads) ->
+          if !isClosed
+          then (Queue.add th waitingThreads; runNextThread ())
+          else (isClosed := true; th ())
+;;
+
+let signalMutex m th = match m with
+  | Mutex (isClosed, waitingThreads) ->
+          begin
+              if !isClosed
+              then (isClosed := false; placeOnReadyQueue (Queue.take waitingThreads))
+              else ();
+              th ()
+          end
+;;
+
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
@@ -145,6 +173,12 @@ exception CannotConvertNonRefVal;;
 let expValToRef = function
   | RefVal n -> n
   | _ -> raise CannotConvertNonRefVal
+;;
+
+exception CannotConvertNonMutexVal;;
+let expValToMutex = function
+  | MutexVal n -> n
+  | _ -> raise CannotConvertNonMutexVal
 ;;
 
 
@@ -178,6 +212,12 @@ let rec valueOf exp env cont = match exp with
           valueOf exp1 env (AssignCont (var, env, cont))
   | SpawnExp e ->
           valueOf e env (SpawnCont cont)
+  | MutexExp ->
+          applyCont cont (MutexVal (newMutex ()))
+  | WaitExp e ->
+          valueOf e env (WaitCont cont)
+  | SignalExp e ->
+          valueOf e env (SignalCont cont)
 
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
@@ -225,6 +265,10 @@ and applyCont' cont val1 = match cont with
               fun () -> applyProcedure (expValToProc val1) (NumVal 0) EndSubThreadCont
           in
           (placeOnReadyQueue newThread; applyCont sc (NumVal 0))
+  | WaitCont sc ->
+          waitForMutex (expValToMutex val1) (fun () -> applyCont sc (NumVal 0))
+  | SignalCont sc ->
+          signalMutex (expValToMutex val1) (fun () -> applyCont sc (NumVal 0))
 ;;
 
 let valueOfProgram = function Program e ->
