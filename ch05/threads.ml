@@ -178,7 +178,14 @@ and applyProcedure p v cont = match p with
           let rv = RefVal (newRef v) in
           valueOf body (ExtendEnv (var, rv, senv)) cont
 
-and applyCont cont val1 = match cont with
+and applyCont cont val1 =
+    if isTimeExpired ()
+    then
+        let currentThread = fun () -> applyCont cont val1 in
+        (placeOnReadyQueue currentThread; runNextThread ())
+    else
+        (decrementTimer (); applyCont' cont val1)
+and applyCont' cont val1 = match cont with
   | EndCont -> val1
   | ZeroCont sc ->
           let val2 = BoolVal (0 = expValToNum val1) in
@@ -205,8 +212,12 @@ and applyCont cont val1 = match cont with
           end
 ;;
 
-let valueOfProgram = function
-  | Program e -> valueOf e EmptyEnv EndCont
+let valueOfProgram = function Program e ->
+    begin
+        initializeStore;
+        initializeScheduler 10;
+        valueOf e EmptyEnv EndCont
+    end
 ;;
 
 
