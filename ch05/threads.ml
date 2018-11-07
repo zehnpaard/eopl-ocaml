@@ -10,6 +10,7 @@ type expression =
   | ProcExp of symbol * expression
   | CallExp of expression * expression
   | AssignExp of symbol * expression
+  | SpawnExp of expression
 ;;
 
 type environment =
@@ -35,6 +36,8 @@ type continuation =
   | CallArgCont of expVal * continuation
   | AssignCont of symbol * environment * continuation
   | EndMainThreadCont
+  | EndSubThreadCont
+  | SpawnCont of continuation
 ;;
 
 type store =
@@ -173,6 +176,8 @@ let rec valueOf exp env cont = match exp with
           valueOf func env (CallFuncCont (arg, env, cont))
   | AssignExp (var, exp1) ->
           valueOf exp1 env (AssignCont (var, env, cont))
+  | SpawnExp e ->
+          valueOf e env (SpawnCont cont)
 
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
@@ -213,6 +218,13 @@ and applyCont' cont val1 = match cont with
           end
   | EndMainThreadCont ->
           (setFinalAnswer val1; runNextThread ())
+  | EndSubThreadCont ->
+          runNextThread ()
+  | SpawnCont sc ->
+          let newThread =
+              fun () -> applyProcedure (expValToProc val1) (NumVal 0) EndSubThreadCont
+          in
+          (placeOnReadyQueue newThread; applyCont sc (NumVal 0))
 ;;
 
 let valueOfProgram = function Program e ->
