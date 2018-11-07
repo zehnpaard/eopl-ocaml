@@ -121,6 +121,28 @@ let setFinalAnswer v =
 ;;
 
 
+type mutex = Mutex of bool ref * (unit -> expVal) Queue.t;;
+
+let newMutex () = Mutex (ref false, Queue.create ());;
+
+let waitForMutex m th = match m with
+  | Mutex (isClosed, waitingThreads) ->
+          if !isClosed
+          then (Queue.add th waitingThreads; runNextThread ())
+          else (isClosed := true; th ())
+;;
+
+let signalMutex m th = match m with
+  | Mutex (isClosed, waitingThreads) ->
+          begin
+              if !isClosed
+              then (isClosed := false; placeOnReadyQueue (Queue.take waitingThreads))
+              else ();
+              th ()
+          end
+;;
+
+
 type program = Program of expression;;
 
 exception CannotConvertNonNumVal;;
