@@ -13,6 +13,7 @@ type expression =
   | AssignExp of symbol * expression
   | SpawnExp of expression
   | MutexExp
+  | WaitExp of expression
 ;;
 
 type environment =
@@ -43,6 +44,7 @@ type continuation =
   | EndMainThreadCont
   | EndSubThreadCont
   | SpawnCont of continuation
+  | WaitCont of continuation
 ;;
 
 type store =
@@ -212,6 +214,8 @@ let rec valueOf exp env cont = match exp with
           valueOf e env (SpawnCont cont)
   | MutexExp ->
           applyCont cont (MutexVal (newMutex ()))
+  | WaitExp e ->
+          valueOf e env (WaitCont cont)
 
 and applyProcedure p v cont = match p with
   | Procedure (var, body, senv) ->
@@ -259,6 +263,8 @@ and applyCont' cont val1 = match cont with
               fun () -> applyProcedure (expValToProc val1) (NumVal 0) EndSubThreadCont
           in
           (placeOnReadyQueue newThread; applyCont sc (NumVal 0))
+  | WaitCont sc ->
+          waitForMutex (expValToMutex val1) (fun () -> applyCont sc (NumVal 0))
 ;;
 
 let valueOfProgram = function Program e ->
