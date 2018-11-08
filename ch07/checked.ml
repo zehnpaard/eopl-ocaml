@@ -1,5 +1,10 @@
 type symbol = Symbol of string;;
 
+type ttype =
+  | TInt
+  | TBool
+  | TFunc of ttype * ttype
+
 type expression =
   | ConstExp of int
   | DiffExp of expression * expression
@@ -7,9 +12,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * expression
+  | ProcExp of symbol * ttype * expression
   | CallExp of expression * expression
-  | LetRecExp of symbol * symbol * expression * expression
+  | LetRecExp of ttype * symbol * symbol * ttype * expression * expression
 ;;
 
 type environment =
@@ -22,6 +27,9 @@ and expVal =
   | ProcVal of procedure
 and procedure =
   | Procedure of symbol * expression * environment
+and typeEnvironment =
+  | EmptyTenv
+  | ExtendTenv of symbol * ttype * typeEnvironment
 ;;
 
 type program = Program of expression;;
@@ -56,6 +64,13 @@ let rec applyEnv env var = match env with
           else applyEnv env1 var
 ;;
 
+let rec applyTenv tenv var = match tenv with
+  | EmptyTenv -> raise VariableNotFound
+  | ExtendTenv (var1, ttype1, tenv1) ->
+          if var = var1 then ttype1
+          else applyTenv tenv1 var
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
@@ -74,12 +89,12 @@ let rec valueOf exp env = match exp with
           applyEnv env var
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
-  | ProcExp (var, body) ->
+  | ProcExp (var, vtype, body) ->
           ProcVal (Procedure (var, body, env))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
-  | LetRecExp (fname, farg, fbody, body) ->
+  | LetRecExp (ftype, fname, farg, atype, fbody, body) ->
           valueOf body (ExtendEnvRec (fname, farg, fbody, env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
@@ -87,6 +102,49 @@ and applyProcedure p v = match p with
 
 let valueOfProgram = function
   | Program e -> valueOf e EmptyEnv
+;;
+
+
+exception TypeError;;
+let rec typeOf exp tenv = match exp with
+  | ConstExp n -> TInt
+  | DiffExp (e1, e2) ->
+
+          if typeOf e1 tenv = TInt && typeOf e2 tenv = TInt
+          then TInt
+          else raise TypeError
+  | ZeroExp e ->
+          if typeOf e tenv = TInt
+          then TBool
+          else raise TypeError
+  | IfExp (e1, e2, e3) ->
+          if typeOf e1 tenv != TBool
+          then raise TypeError
+          else let e2t = typeOf e2 tenv in
+            if e2t != typeOf e3 tenv
+            then raise TypeError
+            else e2t
+  | VarExp var ->
+          applyTenv tenv var
+  | LetExp (var, e, body) ->
+          typeOf body (ExtendTenv (var, typeOf e tenv, tenv))
+  | ProcExp (var, vtype, body) ->
+          let rtype = typeOf body (ExtendTenv (var, vtype, tenv)) in
+          TFunc (vtype, rtype)
+  | CallExp (func, arg) ->
+          (match typeOf func tenv with
+            | TFunc (atype, rtype) when atype = typeOf arg tenv -> rtype
+            | _ -> raise TypeError)
+  | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
+          let ftype = TFunc (atype, rtype) in
+          let newTenv = ExtendTenv (farg, atype, ExtendTenv (fname, ftype, tenv)) in
+          if typeOf fbody newTenv != rtype
+          then raise TypeError
+          else typeOf body newTenv
+;;
+
+let typeOfProgram = function
+  | Program e -> typeOf e EmptyTenv
 ;;
 
 
