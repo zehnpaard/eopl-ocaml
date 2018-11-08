@@ -1,5 +1,10 @@
 type symbol = Symbol of string;;
 
+type xtype =
+  | XInt
+  | XBool
+  | XFunc of xtype * xtype
+
 type expression =
   | ConstExp of int
   | DiffExp of expression * expression
@@ -7,9 +12,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * expression
+  | ProcExp of symbol * xtype * expression
   | CallExp of expression * expression
-  | LetRecExp of symbol * symbol * expression * expression
+  | LetRecExp of xtype * symbol * symbol * xtype * expression * expression
 ;;
 
 type environment =
@@ -74,12 +79,12 @@ let rec valueOf exp env = match exp with
           applyEnv env var
   | LetExp (var, e, body) ->
           valueOf body (ExtendEnv (var, (valueOf e env), env))
-  | ProcExp (var, body) ->
+  | ProcExp (var, vtype, body) ->
           ProcVal (Procedure (var, body, env))
   | CallExp (func, arg) ->
           let p = expValToProc (valueOf func env) in
           applyProcedure p (valueOf arg env)
-  | LetRecExp (fname, farg, fbody, body) ->
+  | LetRecExp (ftype, fname, farg, atype, fbody, body) ->
           valueOf body (ExtendEnvRec (fname, farg, fbody, env))
 and applyProcedure p v = match p with
   | Procedure (var, body, senv) -> valueOf body (ExtendEnv (var, v, senv))
