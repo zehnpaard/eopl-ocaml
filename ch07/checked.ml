@@ -27,6 +27,9 @@ and expVal =
   | ProcVal of procedure
 and procedure =
   | Procedure of symbol * expression * environment
+and typeEnvironment =
+  | EmptyTenv
+  | ExtendTenv of symbol * ttype * typeEnvironment
 ;;
 
 type program = Program of expression;;
@@ -59,6 +62,13 @@ let rec applyEnv env var = match env with
   | ExtendEnvRec (fname, arg, body, env1) ->
           if var = fname then ProcVal (Procedure (arg, body, env))
           else applyEnv env1 var
+;;
+
+let rec applyTenv tenv var = match tenv with
+  | EmptyTenv -> raise VariableNotFound
+  | ExtendTenv (var1, ttype1, tenv1) ->
+          if var = var1 then ttype1
+          else applyTenv tenv1 var
 ;;
 
 
