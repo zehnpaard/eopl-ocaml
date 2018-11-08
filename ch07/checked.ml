@@ -105,10 +105,11 @@ let valueOfProgram = function
 ;;
 
 
-exception TypeError;
+exception TypeError;;
 let rec typeOf exp tenv = match exp with
   | ConstExp n -> TInt
   | DiffExp (e1, e2) ->
+
           if typeOf e1 tenv = TInt && typeOf e2 tenv = TInt
           then TInt
           else raise TypeError
@@ -131,7 +132,15 @@ let rec typeOf exp tenv = match exp with
           let rtype = typeOf body (ExtendTenv (var, vtype, tenv)) in
           TFunc (vtype, rtype)
   | CallExp (func, arg) ->
-  | LetRecExp (ftype, fname, farg, atype, fbody, body) ->
+          (match typeOf func tenv with
+            | TFunc (atype, rtype) when atype = typeOf arg tenv -> rtype
+            | _ -> raise TypeError)
+  | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
+          let ftype = TFunc (atype, rtype) in
+          let newTenv = ExtendTenv (farg, atype, ExtendTenv (fname, ftype, tenv)) in
+          if typeOf fbody newTenv != rtype
+          then raise TypeError
+          else typeOf body newTenv
 ;;
 
 let typeOfProgram = function
