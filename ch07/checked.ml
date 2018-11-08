@@ -107,9 +107,15 @@ let valueOfProgram = function
 
 exception TypeError;
 let rec typeOf exp tenv = match exp with
-  | ConstExp n ->
+  | ConstExp n -> TInt
   | DiffExp (e1, e2) ->
+          if typeOf e1 tenv = TInt && typeOf e2 tenv = TInt
+          then TInt
+          else raise TypeError
   | ZeroExp e ->
+          if typeOf e tenv = TInt
+          then TBool
+          else raise TypeError
   | IfExp (e1, e2, e3) ->
   | VarExp var ->
   | LetExp (var, e, body) ->
