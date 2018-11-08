@@ -1,9 +1,9 @@
 type symbol = Symbol of string;;
 
-type xtype =
-  | XInt
-  | XBool
-  | XFunc of xtype * xtype
+type ttype =
+  | TInt
+  | TBool
+  | TFunc of ttype * ttype
 
 type expression =
   | ConstExp of int
@@ -12,9 +12,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * xtype * expression
+  | ProcExp of symbol * ttype * expression
   | CallExp of expression * expression
-  | LetRecExp of xtype * symbol * symbol * xtype * expression * expression
+  | LetRecExp of ttype * symbol * symbol * ttype * expression * expression
 ;;
 
 type environment =
