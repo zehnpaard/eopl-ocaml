@@ -117,7 +117,14 @@ let rec typeOf exp tenv = match exp with
           then TBool
           else raise TypeError
   | IfExp (e1, e2, e3) ->
+          if typeOf e1 tenv != TBool
+          then raise TypeError
+          else let e2t = typeOf e2 tenv in
+            if e2t != typeOf e3 tenv
+            then raise TypeError
+            else e2t
   | VarExp var ->
+          applyTenv tenv var
   | LetExp (var, e, body) ->
   | ProcExp (var, vtype, body) ->
   | CallExp (func, arg) ->
