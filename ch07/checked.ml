@@ -105,6 +105,24 @@ let valueOfProgram = function
 ;;
 
 
+exception TypeError;
+let rec typeOf exp tenv = match exp with
+  | ConstExp n ->
+  | DiffExp (e1, e2) ->
+  | ZeroExp e ->
+  | IfExp (e1, e2, e3) ->
+  | VarExp var ->
+  | LetExp (var, e, body) ->
+  | ProcExp (var, vtype, body) ->
+  | CallExp (func, arg) ->
+  | LetRecExp (ftype, fname, farg, atype, fbody, body) ->
+;;
+
+let typeOfProgram = function
+  | Program e -> typeOf e EmptyTenv
+;;
+
+
 let exp1 = DiffExp (ConstExp 5, ConstExp 3);;
 let pgm1 = Program exp1;;
 print_int (expValToNum (valueOfProgram pgm1));;
