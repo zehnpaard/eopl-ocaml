@@ -126,7 +126,10 @@ let rec typeOf exp tenv = match exp with
   | VarExp var ->
           applyTenv tenv var
   | LetExp (var, e, body) ->
+          typeOf body (ExtendTenv (var, typeOf e tenv, tenv))
   | ProcExp (var, vtype, body) ->
+          let rtype = typeOf body (ExtendTenv (var, vtype, tenv)) in
+          TFunc (vtype, rtype)
   | CallExp (func, arg) ->
   | LetRecExp (ftype, fname, farg, atype, fbody, body) ->
 ;;
