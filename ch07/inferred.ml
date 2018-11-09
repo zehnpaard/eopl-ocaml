@@ -103,6 +103,13 @@ let rec applySubstToType subst ty = match ty with
   | TVar n -> applyExactSubst subst ty
 ;;
 
+let rec noOccurrence tvar ty = match ty with
+  | TInt -> true
+  | TBool -> true
+  | TFunc (ty1, ty2) -> noOccurrence tvar ty1 && noOccurrence tvar ty2
+  | TVar n -> tvar != ty
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
