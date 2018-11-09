@@ -181,10 +181,14 @@ let valueOfProgram = function
 type typeResult = TypeResult of ttype * subst;;
 
 exception TypeError;;
-let rec typeOf exp tenv = match exp with
+let rec typeOf exp tenv subst = match exp with
   | ConstExp n ->
-  | DiffExp (e1, e2) ->
+          TypeResult (TInt, subst)
   | ZeroExp e ->
+          (match typeOf e tenv subst with
+            | TypeResult (ty, subst') ->
+                    TypeResult (TBool, unifier ty TInt subst' e))
+  | DiffExp (e1, e2) ->
   | IfExp (e1, e2, e3) ->
   | VarExp var ->
   | LetExp (var, e, body) ->
