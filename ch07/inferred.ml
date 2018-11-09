@@ -135,6 +135,16 @@ let rec unifier ty1 ty2 subst =
       | _, _ -> raise UnificationFailure
 ;;
 
+let getFreshTVar =
+    let x = ref (-1) in
+    fun () -> (x := !x+1; TVar !x)
+;;
+
+let otypeTottype = function
+  | ONoType -> getFreshTVar ()
+  | OAType t -> t
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
