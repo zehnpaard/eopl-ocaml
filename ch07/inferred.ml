@@ -205,7 +205,11 @@ let rec typeOf exp tenv subst = match exp with
   | LetExp (var, e, body) ->
           let TypeResult (ty1, subst1) = typeOf e tenv subst in
           typeOf body (ExtendTenv (var, ty1, tenv)) subst
-  | ProcExp (var, vtype, body) ->
+  | ProcExp (var, ovtype, body) ->
+          let vtype = otypeTottype ovtype in
+          let tenv' = ExtendTenv (var, vtype, tenv) in
+          let TypeResult (ty1, subst1) = typeOf body tenv' subst in
+          TypeResult (TFunc (vtype, ty1), subst1)
   | CallExp (func, arg) ->
   | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
 ;;
