@@ -4,6 +4,12 @@ type ttype =
   | TInt
   | TBool
   | TFunc of ttype * ttype
+  | TVar of int
+;;
+
+type otype =
+  | ONoType
+  | OAType of ttype
 
 type expression =
   | ConstExp of int
@@ -12,9 +18,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * ttype * expression
+  | ProcExp of symbol * otype * expression
   | CallExp of expression * expression
-  | LetRecExp of ttype * symbol * symbol * ttype * expression * expression
+  | LetRecExp of otype * symbol * symbol * otype * expression * expression
 ;;
 
 type environment =
@@ -71,6 +77,74 @@ let rec applyTenv tenv var = match tenv with
           else applyTenv tenv1 var
 ;;
 
+type subst = Subst of ttype list * ttype list;;
+
+let rec applyOneSubst ty0 tvar ty1 = match ty0 with
+  | TInt -> TInt
+  | TBool -> TBool
+  | TFunc (ty2, ty3) -> TFunc (applyOneSubst ty2 tvar ty1, applyOneSubst ty3 tvar ty1)
+  | TVar n -> if ty0 = tvar then ty1 else ty0
+;;
+
+let extendSubst subst1 tvar ty0 = match subst1 with
+  | Subst (tvars, tys) ->
+          let tys' = List.map (fun x -> applyOneSubst x tvar ty0) tys in
+          Subst (tvar::tvars, ty0::tys')
+
+exception KeyValCountMismatch
+let applyExactSubst subst ty =
+    let rec f = function
+        | [], [] -> ty
+        | [], _ | _, [] -> raise KeyValCountMismatch
+        | tvar::tvs, ty1::tys -> if tvar = ty then ty1 else f (tvs, tys)
+    in
+    match subst with Subst (tvars, tys) -> f (tvars, tys)
+;;
+
+let rec applySubstToType subst ty = match ty with
+  | TInt -> TInt
+  | TBool -> TBool
+  | TFunc (ty1, ty2) -> TFunc (applySubstToType subst ty1, applySubstToType subst ty2)
+  | TVar n -> applyExactSubst subst ty
+;;
+
+let rec noOccurrence tvar ty = match ty with
+  | TInt -> true
+  | TBool -> true
+  | TFunc (ty1, ty2) -> noOccurrence tvar ty1 && noOccurrence tvar ty2
+  | TVar n -> tvar != ty
+;;
+
+exception NoOccurrenceViolation;;
+exception UnificationFailure;;
+let rec unifier ty1 ty2 subst =
+    let ty1' = applySubstToType subst ty1 in
+    let ty2' = applySubstToType subst ty2 in
+    match ty1', ty2' with
+      | _, _ when ty1' = ty2' -> subst
+      | TVar n, _ ->
+              if noOccurrence ty1' ty2'
+              then extendSubst subst ty1' ty2'
+              else raise NoOccurrenceViolation
+      | _, TVar n ->
+              if noOccurrence ty2' ty1'
+              then extendSubst subst ty2' ty1'
+              else raise NoOccurrenceViolation
+      | TFunc (ta1, tr1), TFunc (ta2, tr2) ->
+              unifier tr1 tr2 (unifier ta1 ta2 subst)
+      | _, _ -> raise UnificationFailure
+;;
+
+let getFreshTVar =
+    let x = ref (-1) in
+    fun () -> (x := !x+1; TVar !x)
+;;
+
+let otypeTottype = function
+  | ONoType -> getFreshTVar ()
+  | OAType t -> t
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
@@ -104,47 +178,57 @@ let valueOfProgram = function
   | Program e -> valueOf e EmptyEnv
 ;;
 
+type typeResult = TypeResult of ttype * subst;;
 
 exception TypeError;;
-let rec typeOf exp tenv = match exp with
-  | ConstExp n -> TInt
-  | DiffExp (e1, e2) ->
-
-          if typeOf e1 tenv = TInt && typeOf e2 tenv = TInt
-          then TInt
-          else raise TypeError
+let rec typeOf exp tenv subst_ = match exp with
+  | ConstExp n ->
+          TypeResult (TInt, subst_)
   | ZeroExp e ->
-          if typeOf e tenv = TInt
-          then TBool
-          else raise TypeError
+          let TypeResult (ty, subst') = typeOf e tenv subst_ in
+          TypeResult (TBool, unifier ty TInt subst')
+  | DiffExp (e1, e2) ->
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
+          let subst1' = unifier ty1 TInt subst1 in
+          let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
+          let subst2' = unifier ty2 TInt subst2 in
+          TypeResult (TInt, subst2')
   | IfExp (e1, e2, e3) ->
-          if typeOf e1 tenv != TBool
-          then raise TypeError
-          else let e2t = typeOf e2 tenv in
-            if e2t != typeOf e3 tenv
-            then raise TypeError
-            else e2t
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
+          let subst1' = unifier ty1 TBool subst1 in
+          let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
+          let TypeResult (ty3, subst3) = typeOf e3 tenv subst2 in
+          let subst3' = unifier ty2 ty3 subst3 in
+          TypeResult (ty2, subst3')
   | VarExp var ->
-          applyTenv tenv var
+          TypeResult (applyTenv tenv var, subst_)
   | LetExp (var, e, body) ->
-          typeOf body (ExtendTenv (var, typeOf e tenv, tenv))
-  | ProcExp (var, vtype, body) ->
-          let rtype = typeOf body (ExtendTenv (var, vtype, tenv)) in
-          TFunc (vtype, rtype)
+          let TypeResult (ty1, subst1) = typeOf e tenv subst_ in
+          typeOf body (ExtendTenv (var, ty1, tenv)) subst1
+  | ProcExp (var, ovtype, body) ->
+          let vtype = otypeTottype ovtype in
+          let tenv' = ExtendTenv (var, vtype, tenv) in
+          let TypeResult (ty1, subst1) = typeOf body tenv' subst_ in
+          TypeResult (TFunc (vtype, ty1), subst1)
   | CallExp (func, arg) ->
-          (match typeOf func tenv with
-            | TFunc (atype, rtype) when atype = typeOf arg tenv -> rtype
-            | _ -> raise TypeError)
-  | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
-          let ftype = TFunc (atype, rtype) in
-          let newTenv = ExtendTenv (farg, atype, ExtendTenv (fname, ftype, tenv)) in
-          if typeOf fbody newTenv != rtype
-          then raise TypeError
-          else typeOf body newTenv
+          let rtype = getFreshTVar () in
+          let TypeResult (ftype, subst1) = typeOf func tenv subst_ in
+          let TypeResult (atype, subst2) = typeOf arg tenv subst1 in
+          let subst3  = unifier ftype (TFunc (atype, rtype)) subst2 in
+          TypeResult (rtype, subst3)
+  | LetRecExp (ortype, fname, farg, oatype, fbody, body) ->
+          let rtype = otypeTottype ortype in
+          let atype = otypeTottype oatype in
+          let bodyTenv = ExtendTenv (fname, TFunc (atype, rtype), tenv) in
+          let fbodyTenv = ExtendTenv (farg, atype, bodyTenv) in
+          let TypeResult (fbtype, subst1) = typeOf fbody fbodyTenv subst_ in
+          let subst2 = unifier fbtype rtype subst1 in
+          typeOf body bodyTenv subst2
 ;;
 
-let typeOfProgram = function
-  | Program e -> typeOf e EmptyTenv
+let typeOfProgram = function Program e ->
+    let TypeResult (ty, subst1) = typeOf e EmptyTenv (Subst ([], [])) in
+    applySubstToType subst1 ty
 ;;
 
 
