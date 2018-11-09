@@ -110,6 +110,26 @@ let rec noOccurrence tvar ty = match ty with
   | TVar n -> tvar != ty
 ;;
 
+exception NoOccurrenceViolation;;
+exception UnificationFailure;;
+let rec unifier ty1 ty2 subst =
+    let ty1' = applySubstToType subst ty1 in
+    let ty2' = applySubstToType subst ty2 in
+    match ty1', ty2' with
+      | _, _ when ty1' = ty2' -> subst
+      | TVar n, _ ->
+              if noOccurrence ty1' ty2'
+              then extendSubst subst ty1' ty2'
+              else raise NoOccurrenceViolation
+      | _, TVar n ->
+              if noOccurrence ty2' ty1'
+              then extendSubst subst ty2' ty1'
+              else raise NoOccurrenceViolation
+      | TFunc (ta1, tr1), TFunc (ta2, tr2) ->
+              unifier tr1 tr2 (unifier ta1 ta2 subst)
+      | _, _ -> raise UnificationFailure
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
