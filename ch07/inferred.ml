@@ -96,6 +96,13 @@ let applyExactSubst subst ty =
     match subst with Subst (tvars, tys) -> f (tvars, tys)
 ;;
 
+let rec applySubstToType subst ty = match ty with
+  | TInt -> TInt
+  | TBool -> TBool
+  | TFunc (ty1, ty2) -> TFunc (applySubstToType subst ty1, applySubstToType subst ty2)
+  | TVar n -> applyExactSubst subst ty
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
