@@ -81,7 +81,10 @@ let rec applyOneSubst ty0 tvar ty1 = match ty0 with
   | TVar n -> if ty0 = tvar then ty1 else ty0
 ;;
 
-
+let extendSubst subst1 tvar ty0 = match subst1 with
+  | Subst (tvars, tys) ->
+          let tys' = List.map (fun x -> applyOneSubst x tvar ty0) tys in
+          Subst (tvar::tvars, ty0::tys')
 
 
 let rec valueOf exp env = match exp with
