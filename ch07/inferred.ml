@@ -186,19 +186,19 @@ let rec typeOf exp tenv subst_ = match exp with
           TypeResult (TInt, subst_)
   | ZeroExp e ->
           let TypeResult (ty, subst') = typeOf e tenv subst_ in
-          TypeResult (TBool, unifier ty TInt subst' e)
+          TypeResult (TBool, unifier ty TInt subst')
   | DiffExp (e1, e2) ->
           let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
-          let subst1' = unifier ty1 TInt subst1 e1 in
+          let subst1' = unifier ty1 TInt subst1 in
           let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
-          let subst2' = unifier ty2 TInt subst2 e2 in
+          let subst2' = unifier ty2 TInt subst2 in
           TypeResult (TInt, subst2')
   | IfExp (e1, e2, e3) ->
           let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
-          let subst1' = unifier ty1 TBool subst1 e1 in
+          let subst1' = unifier ty1 TBool subst1 in
           let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
           let TypeResult (ty3, subst3) = typeOf e3 tenv subst2 in
-          let subst3' = unifier ty2 ty3 subst3 exp in
+          let subst3' = unifier ty2 ty3 subst3 in
           TypeResult (ty2, subst3')
   | VarExp var ->
           TypeResult (applyTenv tenv var, subst)
@@ -214,9 +214,16 @@ let rec typeOf exp tenv subst_ = match exp with
           let rtype = getFreshTVar () in
           let TypeResult (ftype, subst1) = typeOf func tenv subst_ in
           let TypeResult (atype, subst2) = typeOf arg tenv subst1 in
-          let subst3  = unifier ftype (TFunc (atype, rtype)) subst2 exp in
+          let subst3  = unifier ftype (TFunc (atype, rtype)) subst2 in
           TypeResult (rtype, subst3)
-  | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
+  | LetRecExp (ortype, fname, farg, oatype, fbody, body) ->
+          let rtype = otypeTottype ortype in
+          let atype = otypeTottype oatype in
+          let bodyTenv = ExtendTenv (fname, TFunc (atype, rtype), tenv) in
+          let fbodyTenv = ExtendTenv (farg, atype, bodyTenv) in
+          let TypeResult (fbtype, subst1) = typeOf fbody fbodyTenv subst_ in
+          let subst2 = unifier fbtype rtype subst1 in
+          typeOf body bodyTenv subst2
 ;;
 
 let typeOfProgram = function
