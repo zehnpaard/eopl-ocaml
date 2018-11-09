@@ -181,20 +181,20 @@ let valueOfProgram = function
 type typeResult = TypeResult of ttype * subst;;
 
 exception TypeError;;
-let rec typeOf exp tenv subst = match exp with
+let rec typeOf exp tenv subst_ = match exp with
   | ConstExp n ->
-          TypeResult (TInt, subst)
+          TypeResult (TInt, subst_)
   | ZeroExp e ->
-          let TypeResult (ty, subst') = typeOf e tenv subst in
+          let TypeResult (ty, subst') = typeOf e tenv subst_ in
           TypeResult (TBool, unifier ty TInt subst' e)
   | DiffExp (e1, e2) ->
-          let TypeResult (ty1, subst1) = typeOf e1 tenv subst in
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
           let subst1' = unifier ty1 TInt subst1 e1 in
           let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
           let subst2' = unifier ty2 TInt subst2 e2 in
           TypeResult (TInt, subst2')
   | IfExp (e1, e2, e3) ->
-          let TypeResult (ty1, subst1) = typeOf e1 tenv subst in
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst_ in
           let subst1' = unifier ty1 TBool subst1 e1 in
           let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
           let TypeResult (ty3, subst3) = typeOf e3 tenv subst2 in
@@ -203,14 +203,19 @@ let rec typeOf exp tenv subst = match exp with
   | VarExp var ->
           TypeResult (applyTenv tenv var, subst)
   | LetExp (var, e, body) ->
-          let TypeResult (ty1, subst1) = typeOf e tenv subst in
+          let TypeResult (ty1, subst1) = typeOf e tenv subst_ in
           typeOf body (ExtendTenv (var, ty1, tenv)) subst
   | ProcExp (var, ovtype, body) ->
           let vtype = otypeTottype ovtype in
           let tenv' = ExtendTenv (var, vtype, tenv) in
-          let TypeResult (ty1, subst1) = typeOf body tenv' subst in
+          let TypeResult (ty1, subst1) = typeOf body tenv' subst_ in
           TypeResult (TFunc (vtype, ty1), subst1)
   | CallExp (func, arg) ->
+          let rtype = getFreshTVar () in
+          let TypeResult (ftype, subst1) = typeOf func tenv subst_ in
+          let TypeResult (atype, subst2) = typeOf arg tenv subst1 in
+          let subst3  = unifier ftype (TFunc (atype, rtype)) subst2 exp in
+          TypeResult (rtype, subst3)
   | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
 ;;
 
