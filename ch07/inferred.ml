@@ -189,11 +189,17 @@ let rec typeOf exp tenv subst = match exp with
           TypeResult (TBool, unifier ty TInt subst' e)
   | DiffExp (e1, e2) ->
           let TypeResult (ty1, subst1) = typeOf e1 tenv subst in
-          let subst1' = unifier ty1 TInt subst1 e1
+          let subst1' = unifier ty1 TInt subst1 e1 in
           let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
-          let subst2' = unifier ty2 TInt subst2 e2
+          let subst2' = unifier ty2 TInt subst2 e2 in
           TypeResult (TInt, subst2')
   | IfExp (e1, e2, e3) ->
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst in
+          let subst1' = unifier ty1 TBool subst1 e1 in
+          let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
+          let TypeResult (ty3, subst3) = typeOf e3 tenv subst2 in
+          let subst3' = unifier ty2 ty3 subst3 exp in
+          TypeResult (ty2, subst3')
   | VarExp var ->
   | LetExp (var, e, body) ->
   | ProcExp (var, vtype, body) ->
