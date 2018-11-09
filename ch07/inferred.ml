@@ -5,6 +5,11 @@ type ttype =
   | TBool
   | TFunc of ttype * ttype
   | TVar of int
+;;
+
+type otype =
+  | ONoType
+  | OAType of ttype
 
 type expression =
   | ConstExp of int
@@ -13,9 +18,9 @@ type expression =
   | IfExp of expression * expression * expression
   | VarExp of symbol
   | LetExp of symbol * expression * expression
-  | ProcExp of symbol * ttype * expression
+  | ProcExp of symbol * otype * expression
   | CallExp of expression * expression
-  | LetRecExp of ttype * symbol * symbol * ttype * expression * expression
+  | LetRecExp of otype * symbol * symbol * otype * expression * expression
 ;;
 
 type environment =
