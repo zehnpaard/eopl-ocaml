@@ -86,6 +86,16 @@ let extendSubst subst1 tvar ty0 = match subst1 with
           let tys' = List.map (fun x -> applyOneSubst x tvar ty0) tys in
           Subst (tvar::tvars, ty0::tys')
 
+exception KeyValCountMismatch
+let applyExactSubst subst ty =
+    let rec f = function
+        | [], [] -> ty
+        | [], _ | _, [] -> raise KeyValCountMismatch
+        | tvar::tvs, ty1::tys -> if tvar = ty then ty1 else f (tvs, tys)
+    in
+    match subst with Subst (tvars, tys) -> f (tvars, tys)
+;;
+
 
 let rec valueOf exp env = match exp with
   | ConstExp n ->
