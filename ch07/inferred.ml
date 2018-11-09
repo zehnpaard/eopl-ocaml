@@ -201,10 +201,10 @@ let rec typeOf exp tenv subst_ = match exp with
           let subst3' = unifier ty2 ty3 subst3 in
           TypeResult (ty2, subst3')
   | VarExp var ->
-          TypeResult (applyTenv tenv var, subst)
+          TypeResult (applyTenv tenv var, subst_)
   | LetExp (var, e, body) ->
           let TypeResult (ty1, subst1) = typeOf e tenv subst_ in
-          typeOf body (ExtendTenv (var, ty1, tenv)) subst
+          typeOf body (ExtendTenv (var, ty1, tenv)) subst1
   | ProcExp (var, ovtype, body) ->
           let vtype = otypeTottype ovtype in
           let tenv' = ExtendTenv (var, vtype, tenv) in
@@ -226,8 +226,9 @@ let rec typeOf exp tenv subst_ = match exp with
           typeOf body bodyTenv subst2
 ;;
 
-let typeOfProgram = function
-  | Program e ->
+let typeOfProgram = function Program e ->
+    let TypeResult (ty, subst1) = typeOf e EmptyTenv (Subst ([], [])) in
+    applySubstToType subst1 ty
 ;;
 
 
