@@ -72,13 +72,19 @@ let rec applyTenv tenv var = match tenv with
           else applyTenv tenv1 var
 ;;
 
+type subst =
+  | EmptySubst
+  | ExtendSubst of ttype * ttype * subst
+;;
 
 let rec applyOneSubst ty0 tvar ty1 = match ty0 with
   | TInt -> TInt
-  | IBool -> TBool
+  | TBool -> TBool
   | TFunc (ty2, ty3) -> TFunc (applyOneSubst ty2 tvar ty1, applyOneSubst ty3 tvar ty1)
   | TVar n -> if ty0 = tvar then ty1 else ty0
 ;;
+
+
 
 
 let rec valueOf exp env = match exp with
