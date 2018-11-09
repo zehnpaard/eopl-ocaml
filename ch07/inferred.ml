@@ -72,10 +72,7 @@ let rec applyTenv tenv var = match tenv with
           else applyTenv tenv1 var
 ;;
 
-type subst =
-  | EmptySubst
-  | ExtendSubst of ttype * ttype * subst
-;;
+type subst = Subst of ttype list * ttype list;;
 
 let rec applyOneSubst ty0 tvar ty1 = match ty0 with
   | TInt -> TInt
