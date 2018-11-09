@@ -4,6 +4,7 @@ type ttype =
   | TInt
   | TBool
   | TFunc of ttype * ttype
+  | TVar of int
 
 type expression =
   | ConstExp of int
@@ -69,6 +70,14 @@ let rec applyTenv tenv var = match tenv with
   | ExtendTenv (var1, ttype1, tenv1) ->
           if var = var1 then ttype1
           else applyTenv tenv1 var
+;;
+
+
+let rec applyOneSubst ty0 tvar ty1 = match ty0 with
+  | TInt -> TInt
+  | IBool -> TBool
+  | TFunc (ty2, ty3) -> TFunc (applyOneSubst ty2 tvar ty1, applyOneSubst ty3 tvar ty1)
+  | TVar n -> if ty0 = tvar then ty1 else ty0
 ;;
 
 
