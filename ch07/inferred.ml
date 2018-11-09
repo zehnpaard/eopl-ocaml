@@ -178,6 +178,7 @@ let valueOfProgram = function
   | Program e -> valueOf e EmptyEnv
 ;;
 
+type typeResult = TypeResult of ttype * subst;;
 
 exception TypeError;;
 let rec typeOf exp tenv = match exp with
