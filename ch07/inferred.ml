@@ -185,10 +185,14 @@ let rec typeOf exp tenv subst = match exp with
   | ConstExp n ->
           TypeResult (TInt, subst)
   | ZeroExp e ->
-          (match typeOf e tenv subst with
-            | TypeResult (ty, subst') ->
-                    TypeResult (TBool, unifier ty TInt subst' e))
+          let TypeResult (ty, subst') = typeOf e tenv subst in
+          TypeResult (TBool, unifier ty TInt subst' e)
   | DiffExp (e1, e2) ->
+          let TypeResult (ty1, subst1) = typeOf e1 tenv subst in
+          let subst1' = unifier ty1 TInt subst1 e1
+          let TypeResult (ty2, subst2) = typeOf e2 tenv subst1' in
+          let subst2' = unifier ty2 TInt subst2 e2
+          TypeResult (TInt, subst2')
   | IfExp (e1, e2, e3) ->
   | VarExp var ->
   | LetExp (var, e, body) ->
