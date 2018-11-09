@@ -201,7 +201,10 @@ let rec typeOf exp tenv subst = match exp with
           let subst3' = unifier ty2 ty3 subst3 exp in
           TypeResult (ty2, subst3')
   | VarExp var ->
+          TypeResult (applyTenv tenv var, subst)
   | LetExp (var, e, body) ->
+          let TypeResult (ty1, subst1) = typeOf e tenv subst in
+          typeOf body (ExtendTenv (var, ty1, tenv)) subst
   | ProcExp (var, vtype, body) ->
   | CallExp (func, arg) ->
   | LetRecExp (rtype, fname, farg, atype, fbody, body) ->
