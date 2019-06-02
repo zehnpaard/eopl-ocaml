@@ -1,0 +1,8 @@
+(menhir
+  (modules parser))
+
+(ocamllex lexer)
+
+(library
+  (name letlang)
+  (modules_without_implementation exp))
