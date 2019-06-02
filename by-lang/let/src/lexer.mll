@@ -2,15 +2,15 @@
 open Parser
 }
 
-whitespace = [' ' '\t' '\n']
-digit = ['0'-'9']
-char = ['a'-'z' 'A'-'Z']
-number = ('0'|['1'-'9'] digit*)
-variable = char (char|digit)*
+let whitespace = [' ' '\t' '\n']
+let digit = ['0'-'9']
+let char = ['a'-'z' 'A'-'Z']
+let number = ('0'|['1'-'9'] digit*)
+let variable = char (char|digit)*
 
 rule f = parse
   | whitespace* { f lexbuf }
-  | number as n { Int n }
+  | number as n { INT (int_of_string n) }
   | "zero?" { ZERO }
   | "(" { LPAREN }
   | ")" { RPAREN }
