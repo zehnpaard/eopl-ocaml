@@ -1,3 +1,5 @@
+open Valenv
+
 let rec eval' env = function
   | Exp.Const n -> Val.Num n
   | Exp.Var s -> (match Env.find env s with
