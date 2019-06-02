@@ -1,6 +1,8 @@
-let eval' env = function
+let rec eval' env = function
   | Exp.Const n -> Val.Num n
-  | Exp.Var s -> Env.find env s
+  | Exp.Var s -> (match Env.find env s with
+      | Some v -> v
+      | None -> failwith "Variable not found in environment")
   | Exp.ZeroP e -> (match eval' env e with
       | Val.Num n -> Val.Bool (n = 0)
       | _ -> failwith "Zero-checking non-numeric value")
