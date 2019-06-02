@@ -1,4 +1,4 @@
-open Letlang
+open Proclang
 
 let rep_str s =
   Lexing.from_string s

@@ -1,4 +1,4 @@
-open Letlang
+open Proclang
 
 let _ =
   Lexing.from_channel stdin
