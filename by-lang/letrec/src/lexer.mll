@@ -23,5 +23,6 @@ rule f = parse
   | "=" { EQ }
   | "in" { IN }
   | "proc" { PROC }
+  | "letrec" { LETREC }
   | variable as s { VAR s }
   | eof { EOF }
