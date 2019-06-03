@@ -1,4 +1,4 @@
-#LET language
+# LET language
 
 Language that contains:
 
