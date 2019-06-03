@@ -25,5 +25,7 @@ let rec eval' env = function
           let env'' = Env.extend env' s v in
           eval' env'' e
       | _ -> failwith "Calling non-procedure")
+  | Exp.LetRec (fname, arg, body, e) ->
+      eval' (Env.extend_rec env fname arg body) e
 
 let f = eval' Env.empty
