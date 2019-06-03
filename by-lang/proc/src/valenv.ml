@@ -16,7 +16,7 @@ end = struct
 end
 
 and Env : sig
-  type t = (string * Val.t) list
+  type t
 
   val empty : t
   val find : t -> string -> Val.t option
