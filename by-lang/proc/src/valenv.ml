@@ -1,23 +1,26 @@
-type val = Num of int | Bool of bool
-and env = (string * val) list
+module rec Val : sig
+  type t = Num of int
+         | Bool of bool
 
-
-module Val : sig
-  type t = val
   val to_str : t -> string
 end = struct
+  type t = Num of int
+         | Bool of bool
+
   let to_str = function
     | Num n -> string_of_int n
     | Bool b -> if b then "True" else "False"
 end
 
+and Env : sig
+  type t = (string * Val.t) list
 
-module Env : sig
-  type t = env
   val empty : t
   val find : t -> string -> Val.t option
   val extend : t -> string -> Val.t -> t
 end = struct
+  type t = (string * Val.t) list
+
   let empty = []
   
   let rec find env s = match env with
