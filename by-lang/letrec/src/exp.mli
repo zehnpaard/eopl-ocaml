@@ -7,3 +7,4 @@ type t =
   | Let of string * t * t
   | Proc of string * t
   | Call of t * t
+  | LetRec of string * string * t * t
