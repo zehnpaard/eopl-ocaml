@@ -11,6 +11,7 @@
 %token LET
 %token EQ
 %token IN
+%token PROC
 %token EOF
 
 %start <Exp.t> f
@@ -26,3 +27,5 @@ expr :
   | DIFF; LPAREN; e1 = expr; COMMA; e2 = expr; RPAREN { Exp.Diff (e1, e2) }
   | IF; e1 = expr; THEN; e2 = expr; ELSE; e3 = expr { Exp.If (e1, e2, e3) }
   | LET; s = VAR; EQ; e1 = expr; IN; e2 = expr { Exp.Let (s, e1, e2) }
+  | PROC; LPAREN; s = VAR; RPAREN; e = expr { Exp.Proc (s, e) }
+  | LPAREN; e1 = expr; e2 = expr; RPAREN { Exp.Call (e1, e2) }
