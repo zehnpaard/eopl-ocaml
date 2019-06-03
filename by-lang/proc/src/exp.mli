@@ -5,3 +5,5 @@ type t =
   | Diff of t * t
   | If of t * t * t
   | Let of string * t * t
+  | Proc of string * t
+  | Call of t * t
