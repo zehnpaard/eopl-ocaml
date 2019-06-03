@@ -22,5 +22,6 @@ rule f = parse
   | "let" { LET }
   | "=" { EQ }
   | "in" { IN }
+  | "proc" { PROC }
   | variable as s { VAR s }
   | eof { EOF }
