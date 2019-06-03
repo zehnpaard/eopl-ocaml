@@ -9,4 +9,5 @@ and Env : sig
   val empty : t
   val find : t -> string -> Val.t option
   val extend : t -> string -> Val.t -> t
+  val extend_rec : t -> string -> string -> Exp.t -> t
 end
