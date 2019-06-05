@@ -4,7 +4,7 @@ let rep_str s =
   Lexing.from_string s
   |> Parser.f Lexer.f
   |> Eval.f
-  |> Valenv.Val.to_str
+  |> Val.to_str
   |> print_endline
 
 let _ =
