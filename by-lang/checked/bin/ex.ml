@@ -1,4 +1,4 @@
-open Letreclang
+open Checkedlang
 
 let _ =
   Lexing.from_channel stdin

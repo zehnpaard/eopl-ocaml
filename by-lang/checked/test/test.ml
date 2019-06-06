@@ -1,4 +1,4 @@
-open Letreclang
+open Checkedlang
 
 let rep_str s =
   Lexing.from_string s
