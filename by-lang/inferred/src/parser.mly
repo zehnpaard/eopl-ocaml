@@ -47,8 +47,8 @@ expr :
       { Exp.LetRec (t1, fname, arg, t2, body, e) }
 
 otype :
-  | QUESTION { Opttype.Unknwon }
-  | t = type_ { Opttype.Concrete t }
+  | QUESTION { Type.Unknown }
+  | t = type_ { t }
 
 type_ :
   | TINT { Type.Int }

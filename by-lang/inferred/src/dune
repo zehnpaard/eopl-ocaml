@@ -5,4 +5,4 @@
 
 (library
   (name inferredlang)
-  (modules_without_implementation exp type opttype))
+  (modules_without_implementation exp type))

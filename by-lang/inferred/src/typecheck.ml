@@ -1,18 +1,20 @@
 type env = (string * Type.t) list
+
 let empty = []
 let rec find tenv s = match tenv with
   | [] -> None
   | (s', t')::tenv' -> if s = s' then Some t' else find tenv' s
 let extend tenv s t = (s, t)::tenv
   
-let rec check tenv = function
-  | Exp.Const _ -> Type.Int
+let rec check tenv subst = function
+  | Exp.Const _ -> (Type.Int, subst)
   | Exp.Var s -> (match find tenv s with
-      | Some t -> t
+      | Some t -> (t, subst)
       | None -> failwith "Variable not typed")
-  | Exp.ZeroP e -> (match check tenv e with
-      | Type.Int -> Type.Bool
-      | _ -> failwith "Non-numeric type passed to zero?")
+  | Exp.ZeroP e -> (match check tenv subst e with
+        t, subst1 ->
+          let subst2 = unifier t Type.Int subst1 e in
+          (Type.Bool, subst2))
   | Exp.Diff (e1, e2) -> (match check tenv e1, check tenv e2 with
       | Type.Int, Type.Int -> Type.Int
       | _ -> failwith "Non-numeric type passed to -(x,y)")

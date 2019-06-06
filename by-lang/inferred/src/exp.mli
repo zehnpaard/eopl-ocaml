@@ -5,6 +5,6 @@ type t =
   | Diff of t * t
   | If of t * t * t
   | Let of string * t * t
-  | Proc of string * Opttype.t * t
+  | Proc of string * Type.t * t
   | Call of t * t
-  | LetRec of Opttype.t * string * string * Opttype.t * t * t
+  | LetRec of Type.t * string * string * Type.t * t * t
