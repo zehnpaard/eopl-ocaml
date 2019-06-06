@@ -5,4 +5,4 @@
 
 (library
   (name checkedlang)
-  (modules_without_implementation exp))
+  (modules_without_implementation exp type))
