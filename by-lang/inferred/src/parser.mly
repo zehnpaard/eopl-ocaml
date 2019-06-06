@@ -17,6 +17,7 @@
 %token TBOOL
 %token COLON
 %token ARROW
+%token QUESTION
 %token EOF
 
 %start <Exp.t> f
@@ -36,14 +37,18 @@ expr :
       { Exp.If (e1, e2, e3) }
   | LET; s = VAR; EQ; e1 = expr; IN; e2 = expr
       { Exp.Let (s, e1, e2) }
-  | PROC; LPAREN; s = VAR; COLON; t = type_; RPAREN; e = expr
+  | PROC; LPAREN; s = VAR; COLON; t = otype; RPAREN; e = expr
       { Exp.Proc (s, t, e) }
   | LPAREN; e1 = expr; e2 = expr; RPAREN
       { Exp.Call (e1, e2) }
-  | LETREC; t1 = type_; fname = VAR; 
-      LPAREN; arg = VAR; COLON; t2 = type_; RPAREN;
+  | LETREC; t1 = otype; fname = VAR; 
+      LPAREN; arg = VAR; COLON; t2 = otype; RPAREN;
       EQ; body = expr; IN; e = expr; 
       { Exp.LetRec (t1, fname, arg, t2, body, e) }
+
+otype :
+  | QUESTION { Opttype.Unknwon }
+  | t = type_ { Opttype.Concrete t }
 
 type_ :
   | TINT { Type.Int }

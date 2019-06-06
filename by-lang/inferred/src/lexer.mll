@@ -28,5 +28,6 @@ rule f = parse
   | "bool" { TBOOL }
   | ":" { COLON }
   | "->" { ARROW }
+  | "?" { QUESTION }
   | variable as s { VAR s }
   | eof { EOF }
