@@ -24,5 +24,9 @@ rule f = parse
   | "in" { IN }
   | "proc" { PROC }
   | "letrec" { LETREC }
+  | "int" { TINT }
+  | "bool" { TBOOL }
+  | ":" { COLON }
+  | "->" { ARROW }
   | variable as s { VAR s }
   | eof { EOF }
