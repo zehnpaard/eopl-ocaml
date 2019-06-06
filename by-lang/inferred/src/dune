@@ -4,5 +4,5 @@
 (ocamllex lexer)
 
 (library
-  (name checkedlang)
-  (modules_without_implementation exp type))
+  (name inferredlang)
+  (modules_without_implementation exp type opttype))

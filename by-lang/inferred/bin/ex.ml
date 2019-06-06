@@ -1,4 +1,4 @@
-open Checkedlang
+open Inferredlang
 
 let check_eval exp =
   ignore (Typecheck.f exp); Eval.f exp
