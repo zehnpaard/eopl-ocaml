@@ -1,45 +1,45 @@
-type env = (string * Type.t) list
-
-let empty = []
-let rec find tenv s = match tenv with
-  | [] -> None
-  | (s', t')::tenv' -> if s = s' then Some t' else find tenv' s
-let extend tenv s t = (s, t)::tenv
-  
 let rec check tenv subst = function
   | Exp.Const _ -> (Type.Int, subst)
-  | Exp.Var s -> (match find tenv s with
+  | Exp.Var s -> (match Tenv.find tenv s with
       | Some t -> (t, subst)
       | None -> failwith "Variable not typed")
-  | Exp.ZeroP e -> (match check tenv subst e with
-        t, subst1 ->
-          let subst2 = unifier t Type.Int subst1 e in
-          (Type.Bool, subst2))
-  | Exp.Diff (e1, e2) -> (match check tenv e1, check tenv e2 with
-      | Type.Int, Type.Int -> Type.Int
-      | _ -> failwith "Non-numeric type passed to -(x,y)")
-  | Exp.If (e1, e2, e3) -> (match check tenv e1 with
-      | Type.Bool ->
-          let t = check tenv e2 in
-          if t = check tenv e3 then t
-          else failwith "Different types in if then and else clauses"
-      | _ -> failwith "Non-boolean passed as if condition")
+  | Exp.ZeroP e -> 
+      let t, subst1 = check tenv subst e in
+      let subst2 = Unify.f t Type.Int subst1 e in
+      (Type.Bool, subst2)
+  | Exp.Diff (e1, e2) ->
+      let t1, subst1 = check tenv subst e1 in
+      let subst1' = Unify.f t1 Type.Int subst1 e1 in
+      let t2, subst2 = check tenv subst1' e2 in
+      let subst2' = Unify.f t2 Type.Int subst2 e2 in
+      (Type.Int, subst2')
+  | Exp.If (e1, e2, e3) as e ->
+      let t1, subst1 = check tenv subst e1 in
+      let subst1' = Unify.f t1 Type.Bool subst1 e1 in
+      let t2, subst2 = check tenv subst1' e2 in
+      let t3, subst3 = check tenv subst2 e3 in
+      let subst' = Unify.f t2 t3 subst3 e in
+      (t2, subst')
   | Exp.Let (s1, e1, e2) ->
-      let t1 = check tenv e1 in
-      let tenv' = extend tenv s1 t1 in
-      check tenv' e2
+      let t1, subst1 = check tenv subst e1 in
+      check (Tenv.extend tenv s1 t1) subst1 e2
   | Exp.Proc (s, t, e) ->
-      let tenv' = extend tenv s t in
-      let rettype = check tenv' e in
-      Type.Proc (t, rettype)
-  | Exp.Call (e1, e2) -> (match check tenv e1 with
-      | Type.Proc (t1, t2) ->
-          if t1 = check tenv e2 then t2
-          else failwith "Proc signature and argument types are mismatched"
-      | _ -> failwith "Non-proc type in proc position of call")
-  | Exp.LetRec (t1, fname, _, t2, _, e) ->
-      let t' = Type.Proc(t2, t1) in
-      let tenv' = extend tenv fname t' in
-      check tenv' e
+      let t1 = Type.make_concrete t in
+      let t2, subst2 = check (Tenv.extend tenv s t1) subst e in
+      (Type.Proc (t1, t2), subst2)
+  | Exp.Call (e1, e2) as e ->
+      let rt = Type.free () in
+      let t1, subst1 = check tenv subst e1 in
+      let t2, subst2 = check tenv subst1 e2 in
+      let subst' = Unify.f t1 (Type.Proc (t2, rt)) subst2 e in
+      (rt, subst')
+  | Exp.LetRec (t1, fname, arg, t2, body, e) ->
+      let rt = Type.make_concrete t1 in
+      let at = Type.make_concrete t2 in
+      let tenv' = Tenv.extend tenv fname (Type.Proc (at, rt)) in
+      let tenv'' = Tenv.extend tenv' arg at in
+      let bt, subst' = check tenv'' subst body in
+      let subst'' = Unify.f bt rt subst' body in
+      check tenv' subst'' e
 
-let f = check empty
+let f = check Tenv.empty Subst.empty
