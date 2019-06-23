@@ -1,7 +1,7 @@
 let rec eval' env = function
   | Exp.Const n -> Val.Num n
   | Exp.Var s -> (match Env.find env s with
-      | Some v -> v
+      | Some n -> Store.deref n
       | None -> failwith "Variable not found in environment")
   | Exp.ZeroP e -> (match eval' env e with
       | Val.Num n -> Val.Bool (n = 0)
@@ -14,24 +14,26 @@ let rec eval' env = function
       | _ -> failwith "Using non-boolean if-condition")
   | Exp.Let (s1, e1, e2) ->
       let v1 = eval' env e1 in
-      let env' = Env.extend env s1 v1 in
+      let env' = Env.extend env s1 (Store.newref v1) in
       eval' env' e2
   | Exp.Proc (s, e) -> Val.Proc (s, e, env)
   | Exp.Call (e1, e2) -> (match eval' env e1 with
       | Val.Proc (s, e, env') ->
           let v = eval' env e2 in
-          let env'' = Env.extend env' s v in
+          let env'' = Env.extend env' s (Store.newref v) in
           eval' env'' e
       | _ -> failwith "Calling non-procedure")
   | Exp.LetRec (fname, arg, body, e) ->
-      eval' (Env.extend_rec env fname arg body) e
-  | Exp.NewRef e -> Val.Num (Store.newref (eval' env e))
-  | Exp.DeRef e -> (match eval' env e with
-      | Val.Num n -> Store.deref n
-      | _ -> failwith "Cannot deref non-number")
-  | Exp.SetRef (r, e) -> (match eval' env r with
-      | Val.Num n -> Store.setref n (eval' env e)
-      | _ -> failwith "Cannot setref non-number")
+      let n = Store.newref (Val.Bool false) in
+      let env' = Env.extend env fname n in
+      let f = Val.Proc (arg, body, env') in
+      begin
+        ignore @@ Store.setref n f;
+        eval' env' e
+      end
+  | Exp.Set (s, e) -> (match Env.find env s with
+      | Some n -> Store.setref n (eval' env e)
+      | None -> failwith "Variable not found in environment")
   | Exp.Block es ->
       let rec f = function
         | [] -> failwith "Cannot evaluate empty block"
@@ -39,6 +41,5 @@ let rec eval' env = function
         | e::es -> (ignore @@ eval' env e; f es)
       in
       f es
-
 
 let f = eval' Env.empty
