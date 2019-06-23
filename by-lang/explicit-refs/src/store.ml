@@ -9,7 +9,7 @@ let newref x =
   begin
     incr n;
     v := x :: !v;
-    n
+    !n
   end
 
 let deref r = List.nth !v (!n - r)

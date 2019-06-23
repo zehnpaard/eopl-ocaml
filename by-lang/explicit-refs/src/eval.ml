@@ -29,8 +29,8 @@ let rec eval' env = function
   | Exp.DeRef e -> (match eval' env e with
       | Val.Num n -> Store.deref n
       | _ -> failwith "Cannot deref non-number")
-  | Exp.SetRef r e -> (match eval' env r with
-      | Val.Num n -> Store.setref n (eval' env r)
+  | Exp.SetRef (r, e) -> (match eval' env r with
+      | Val.Num n -> Store.setref n (eval' env e)
       | _ -> failwith "Cannot setref non-number")
 
 let f = eval' Env.empty
