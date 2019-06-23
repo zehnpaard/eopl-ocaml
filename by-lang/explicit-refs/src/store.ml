@@ -21,4 +21,4 @@ let setref r x =
         if m = 0 then x :: ys
         else y :: (f (m - 1) ys)
   in
-  v := f (!n - r) !v
+  (v := f (!n - r) !v; x)
