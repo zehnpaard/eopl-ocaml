@@ -1,4 +1,4 @@
-# LET language
+# PROC language
 
 Language that supports:
 
@@ -7,6 +7,7 @@ Language that supports:
 * Zero-value check
 * Conditional branching on If
 * Let-bound Variables
+* Single parameter non-recursive procedures
 
 Run main function in the following format:
 
@@ -21,11 +22,13 @@ The interpreter takes an empty line to denote the end of the input expression.
 Example:
 
 ```
->>> let x = 5 in
-  if zero?(-(x, 1)) then 0 else 1
+>>> let f =
+  proc (x)
+    if zero?(-(x, 1)) then 0 else 1
+  in
+  (f 5)
 
 1
 ```
-
 
 Alternatively, run tests defined in `test/test.ml` using the `dune runtest` command.

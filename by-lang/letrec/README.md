@@ -1,4 +1,4 @@
-# LET language
+# LETREC language
 
 Language that supports:
 
@@ -7,6 +7,8 @@ Language that supports:
 * Zero-value check
 * Conditional branching on If
 * Let-bound Variables
+* Single parameter non-recursive procedures
+* Single parameter recursive procedures
 
 Run main function in the following format:
 
@@ -21,11 +23,12 @@ The interpreter takes an empty line to denote the end of the input expression.
 Example:
 
 ```
->>> let x = 5 in
-  if zero?(-(x, 1)) then 0 else 1
+>>> letrec double(x)
+  = if zero?(x) then 0 else -((double -(x, 1)), -(0, 2))
+  in
+  (double 6)
 
-1
+12
 ```
-
 
 Alternatively, run tests defined in `test/test.ml` using the `dune runtest` command.
