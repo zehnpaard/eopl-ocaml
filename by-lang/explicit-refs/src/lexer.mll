@@ -24,5 +24,8 @@ rule f = parse
   | "in" { IN }
   | "proc" { PROC }
   | "letrec" { LETREC }
+  | "newref" { NEWREF }
+  | "deref" { DEREF }
+  | "setref" { SETREF }
   | variable as s { VAR s }
   | eof { EOF }
