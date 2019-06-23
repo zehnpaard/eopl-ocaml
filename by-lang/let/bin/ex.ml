@@ -1,8 +1,15 @@
 open Letlang
 
-let _ =
-  Lexing.from_channel stdin
+let f s =
+  Lexing.from_string s
   |> Parser.f Lexer.f
   |> Eval.f
   |> Val.to_str
   |> print_endline
+
+let rec rep acc =
+  let s = read_line () in
+  if s = "" then f acc
+  else rep (acc ^ "\n" ^ s)
+
+let _ = (print_string ">>> "; rep "")
