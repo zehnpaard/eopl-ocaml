@@ -13,9 +13,7 @@
 %token IN
 %token PROC
 %token LETREC
-%token NEWREF
-%token DEREF
-%token SETREF
+%token SET
 %token BEGIN
 %token END
 %token SEMICOLON
@@ -38,7 +36,5 @@ expr :
   | LPAREN; e1 = expr; e2 = expr; RPAREN { Exp.Call (e1, e2) }
   | LETREC; fname = VAR; LPAREN; arg = VAR; RPAREN;
      EQ; body = expr; IN; e = expr; { Exp.LetRec (fname, arg, body, e) }
-  | NEWREF; LPAREN; e = expr; RPAREN { Exp.NewRef e }
-  | DEREF; LPAREN; e = expr; RPAREN { Exp.DeRef e }
-  | SETREF; LPAREN; e1 = expr; COMMA; e2 = expr; RPAREN { Exp.SetRef (e1, e2) }
+  | SET; LPAREN; s = VAR; COMMA; e = expr; RPAREN { Exp.Set (s, e) }
   | BEGIN; es = separated_list(SEMICOLON, expr); END { Exp.Block es }
