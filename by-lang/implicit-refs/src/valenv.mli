@@ -13,7 +13,6 @@ end
 module Env : sig
   type t = envt
   val empty : t
-  val find : t -> string -> valt option
-  val extend : t -> string -> valt -> t
-  val extend_rec : t -> string -> string -> Exp.t -> t
+  val find : t -> string -> int option
+  val extend : t -> string -> int -> t
 end
