@@ -17,4 +17,5 @@ let _ =
   rep_str "(proc (f) (f (f 77)) proc (x) -(x, 11))";
   rep_str "let x = 200 in let f = proc (z) -(z, x) in let x = 100 in let g  = proc (z) -(z, x) in -((f 1), (g 1))";
   rep_str "letrec zero (x) = if zero?(x) then x else (zero -(x, 1)) in (zero 5)";
-  rep_str "let x = newref(0) in begin setref(x, 5); deref(x) end"
+  rep_str "let x = newref(0) in begin setref(x, 5); deref(x) end";
+  rep_str "let g = let counter = newref(0) in proc(dummy) begin setref(counter, -(deref(counter), -(0, 1))); deref(counter) end in let a = (g 11) in let b = (g 11) in -(a, b)";
