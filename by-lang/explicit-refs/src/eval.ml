@@ -25,5 +25,12 @@ let rec eval' env = function
       | _ -> failwith "Calling non-procedure")
   | Exp.LetRec (fname, arg, body, e) ->
       eval' (Env.extend_rec env fname arg body) e
+  | Exp.NewRef e -> Val.Num (Store.newref (eval' env e))
+  | Exp.DeRef e -> (match eval' env e with
+      | Val.Num n -> Store.deref n
+      | _ -> failwith "Cannot deref non-number")
+  | Exp.SetRef r e -> (match eval' env r with
+      | Val.Num n -> Store.setref n (eval' env r)
+      | _ -> failwith "Cannot setref non-number")
 
 let f = eval' Env.empty
