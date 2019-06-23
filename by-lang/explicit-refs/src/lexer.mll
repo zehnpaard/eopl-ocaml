@@ -27,5 +27,8 @@ rule f = parse
   | "newref" { NEWREF }
   | "deref" { DEREF }
   | "setref" { SETREF }
+  | "begin" { BEGIN }
+  | "end" { END }
+  | ";" { SEMICOLON }
   | variable as s { VAR s }
   | eof { EOF }

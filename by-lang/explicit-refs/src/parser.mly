@@ -16,6 +16,9 @@
 %token NEWREF
 %token DEREF
 %token SETREF
+%token BEGIN
+%token END
+%token SEMICOLON
 %token EOF
 
 %start <Exp.t> f
@@ -38,3 +41,4 @@ expr :
   | NEWREF; LPAREN; e = expr; RPAREN { Exp.NewRef e }
   | DEREF; LPAREN; e = expr; RPAREN { Exp.DeRef e }
   | SETREF; LPAREN; e1 = expr; COMMA; e2 = expr; RPAREN { Exp.SetRef (e1, e2) }
+  | BEGIN; es = separated_list(SEMICOLON, expr); END { Exp.Block es }

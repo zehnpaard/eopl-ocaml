@@ -16,7 +16,7 @@ let deref r = List.nth !v (!n - r)
 
 let setref r x =
   let rec f m = function
-    | [] -> failwith ""
+    | [] -> failwith "Reference does not exist"
     | y::ys ->
         if m = 0 then x :: ys
         else y :: (f (m - 1) ys)

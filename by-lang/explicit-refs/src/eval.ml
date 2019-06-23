@@ -32,5 +32,13 @@ let rec eval' env = function
   | Exp.SetRef (r, e) -> (match eval' env r with
       | Val.Num n -> Store.setref n (eval' env e)
       | _ -> failwith "Cannot setref non-number")
+  | Exp.Block es ->
+      let rec f = function
+        | [] -> failwith "Cannot evaluate empty block"
+        | [e] -> eval' env e
+        | e::es -> (ignore @@ eval' env e; f es)
+      in
+      f es
+
 
 let f = eval' Env.empty

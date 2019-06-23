@@ -11,3 +11,4 @@ type t =
   | NewRef of t
   | DeRef of t
   | SetRef of t * t
+  | Block of t list
