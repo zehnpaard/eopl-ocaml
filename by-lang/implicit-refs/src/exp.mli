@@ -8,7 +8,5 @@ type t =
   | Proc of string * t
   | Call of t * t
   | LetRec of string * string * t * t
-  | NewRef of t
-  | DeRef of t
-  | SetRef of t * t
+  | Set of string * t
   | Block of t list
