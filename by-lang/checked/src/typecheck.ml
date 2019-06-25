@@ -35,9 +35,10 @@ let rec check tenv = function
           if t1 = check tenv e2 then t2
           else failwith "Proc signature and argument types are mismatched"
       | _ -> failwith "Non-proc type in proc position of call")
-  | Exp.LetRec (t1, fname, _, t2, _, e) ->
+  | Exp.LetRec (t1, fname, farg, t2, fbody, e) ->
       let t' = Type.Proc(t2, t1) in
       let tenv' = extend tenv fname t' in
-      check tenv' e
+      let tenv'' = extend tenv' farg t2 in
+      (ignore @@ check tenv'' fbody; check tenv' e)
 
 let f = check empty
