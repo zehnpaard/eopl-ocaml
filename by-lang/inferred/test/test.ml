@@ -1,7 +1,11 @@
 open Inferredlang
 
 let check_eval exp =
-  ignore (Typecheck.f exp); Eval.f exp
+  begin
+    Type.init ();
+    ignore @@ Typecheck.f exp;
+    Eval.f exp
+  end
 
 let rep_str s = 
   try
