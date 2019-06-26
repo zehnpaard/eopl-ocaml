@@ -6,10 +6,10 @@ type t = Int
 
 let n = ref 0
 let init () = n := 0
-let free () = let x = !n in (incr n; Var x)
+let new_var () = let x = !n in (incr n; Var x)
 
 let make_concrete = function
-  | Unknown -> free ()
+  | Unknown -> new_var ()
   | t -> t
 
 let rec no_occurrence t1 = function

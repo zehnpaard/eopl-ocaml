@@ -28,7 +28,7 @@ let rec check tenv subst = function
       let t2, subst2 = check (Tenv.extend tenv s t1) subst e in
       (Type.Proc (t1, t2), subst2)
   | Exp.Call (e1, e2) as e ->
-      let rt = Type.free () in
+      let rt = Type.new_var () in
       let t1, subst1 = check tenv subst e1 in
       let t2, subst2 = check tenv subst1 e2 in
       let subst' = Unify.f t1 (Type.Proc (t2, rt)) subst2 e in

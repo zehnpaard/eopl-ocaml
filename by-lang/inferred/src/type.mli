@@ -5,6 +5,6 @@ type t = Int
        | Var of int
 
 val init : unit -> unit
-val free : unit -> t
+val new_var : unit -> t
 val make_concrete : t -> t
 val no_occurrence : t -> t -> bool
