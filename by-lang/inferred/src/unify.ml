@@ -5,7 +5,7 @@ let rec f t1 t2 subst e =
         if Type.no_occurrence t1' t2' then Subst.extend subst t1' t2'
         else failwith "No occurrence condition violated"
     | t1', (Type.Var _ as t2') ->
-        if Type.no_occurrence t1' t2' then Subst.extend subst t1' t2'
+        if Type.no_occurrence t2' t1' then Subst.extend subst t2' t1'
         else failwith "No occurrence condition violated"
     | Type.Proc (atype1, rtype1), Type.Proc (atype2, rtype2) ->
         let subst' = f atype1 atype2 subst e in
