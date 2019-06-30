@@ -12,9 +12,9 @@ let make_concrete = function
   | Unknown -> new_var ()
   | t -> t
 
-let rec no_occurrence t1 = function
-  | Int | Bool -> true
-  | Var _ as t2 -> not (t1 = t2)
+let rec occurs t1 = function
+  | Int | Bool -> false
+  | Var _ as t2 -> t1 = t2
   | Proc (t2, t3) ->
-      (no_occurrence t1 t2) && (no_occurrence t1 t3)
+      occurs t1 t2 || occurs t1 t3
   | Unknown -> failwith "Invalid no occurrence check against Unknown type"
