@@ -1,1 +1,1 @@
-val f : Exp.t -> (Type.t * Subst.t)
+val f : Exp.t -> Type.t

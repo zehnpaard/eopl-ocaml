@@ -3,6 +3,7 @@ open Inferredlang
 let check_eval exp =
   begin
     Type.init ();
+    Subst.init ();
     ignore @@ Typecheck.f exp;
     Eval.f exp
   end
