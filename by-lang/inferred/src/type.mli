@@ -7,4 +7,4 @@ type t = Int
 val init : unit -> unit
 val new_var : unit -> t
 val make_concrete : t -> t
-val no_occurrence : t -> t -> bool
+val occurs : t -> t -> bool
