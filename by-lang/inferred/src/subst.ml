@@ -2,7 +2,9 @@ type t = (Type.t * Type.t) list
 
 let empty = []
 
-let extend subst tv t = (tv, t)::subst 
+let extend subst tv t = match tv with
+  | Type.Var _ -> (tv, t)::subst 
+  | _ -> failwith "Cannot extend substitution with a non-var LHS"
 
 let rec apply subst = function
   | Type.Int -> Type.Int
