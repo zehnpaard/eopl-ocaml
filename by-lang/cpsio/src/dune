@@ -4,5 +4,4 @@
 (ocamllex lexer)
 
 (library
-  (name letreclang)
-  (modules_without_implementation exp))
+  (name letreclang))
