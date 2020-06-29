@@ -12,10 +12,10 @@ let rec eval' env = function
   | Exp.If (e1, e2, e3) -> (match eval' env e1 with
       | Val.Bool b -> eval' env (if b then e2 else e3)
       | _ -> failwith "Using non-boolean if-condition")
-  | Exp.Let (s1, e1, e2) ->
-      let v1 = eval' env e1 in
-      let env' = Env.extend env s1 v1 in
-      eval' env' e2
+  | Exp.Let (ses, e2) ->
+      let f env (s, e) = Env.extend env s (eval' env e) in
+      let env = List.fold_left f env ses in
+      eval' env e2
   | Exp.Proc (s, e) -> Val.Proc (s, e, env)
   | Exp.Call (e1, e2) -> (match eval' env e1 with
       | Val.Proc (s, e, env') ->
