@@ -14,6 +14,8 @@ rule f = parse
   | "zero?" { ZERO }
   | "(" { LPAREN }
   | ")" { RPAREN }
+  | "[" { LBRACK }
+  | "]" { RBRACK }
   | "-" { DIFF }
   | "if" { IF }
   | "let" { LET }
