@@ -4,13 +4,9 @@
 %token LPAREN
 %token RPAREN
 %token DIFF
-%token COMMA
 %token IF
-%token THEN
-%token ELSE
 %token LET
 %token EQ
-%token IN
 %token PROC
 %token LETREC
 %token EOF
@@ -24,11 +20,11 @@ f : e = expr; EOF { e }
 expr :
   | n = INT { Exp.Const n }
   | s = VAR { Exp.Var s }
-  | ZERO; LPAREN; e = expr; RPAREN { Exp.ZeroP e }
-  | DIFF; LPAREN; e1 = expr; COMMA; e2 = expr; RPAREN { Exp.Diff (e1, e2) }
-  | IF; e1 = expr; THEN; e2 = expr; ELSE; e3 = expr { Exp.If (e1, e2, e3) }
-  | LET; s = VAR; EQ; e1 = expr; IN; e2 = expr { Exp.Let (s, e1, e2) }
-  | PROC; LPAREN; s = VAR; RPAREN; e = expr { Exp.Proc (s, e) }
+  | LPAREN; ZERO; e = expr; RPAREN { Exp.ZeroP e }
+  | LPAREN; DIFF; e1 = expr; e2 = expr; RPAREN { Exp.Diff (e1, e2) }
+  | LPAREN; IF; e1 = expr; e2 = expr; e3 = expr; RPAREN { Exp.If (e1, e2, e3) }
+  | LPAREN; LET; s = VAR; e1 = expr; e2 = expr; RPAREN { Exp.Let (s, e1, e2) }
+  | LPAREN PROC; s = VAR; e = expr; RPAREN { Exp.Proc (s, e) }
   | LPAREN; e1 = expr; e2 = expr; RPAREN { Exp.Call (e1, e2) }
-  | LETREC; fname = VAR; LPAREN; arg = VAR; RPAREN;
-     EQ; body = expr; IN; e = expr; { Exp.LetRec (fname, arg, body, e) }
+  | LPAREN; LETREC; fname = VAR; arg = VAR;
+     body = expr; e = expr; RPAREN { Exp.LetRec (fname, arg, body, e) }

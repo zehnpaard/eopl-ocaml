@@ -15,13 +15,8 @@ rule f = parse
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "-" { DIFF }
-  | "," { COMMA }
   | "if" { IF }
-  | "then" { THEN }
-  | "else" { ELSE }
   | "let" { LET }
-  | "=" { EQ }
-  | "in" { IN }
   | "proc" { PROC }
   | "letrec" { LETREC }
   | variable as s { VAR s }
