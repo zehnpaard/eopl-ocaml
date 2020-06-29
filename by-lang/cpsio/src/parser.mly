@@ -27,5 +27,5 @@ expr :
   | LPAREN; LET; LBRACK; s = VAR; e1 = expr; RBRACK; e2 = expr; RPAREN { Exp.Let (s, e1, e2) }
   | LPAREN PROC; LBRACK; s = VAR; RBRACK; e = expr; RPAREN { Exp.Proc (s, e) }
   | LPAREN; e1 = expr; e2 = expr; RPAREN { Exp.Call (e1, e2) }
-  | LPAREN; LETREC; fname = VAR; arg = VAR;
-     body = expr; e = expr; RPAREN { Exp.LetRec (fname, arg, body, e) }
+  | LPAREN; LETREC; LBRACK; fname = VAR; LBRACK; arg = VAR; RBRACK;
+     body = expr; RBRACK; e = expr; RPAREN { Exp.LetRec (fname, arg, body, e) }

@@ -16,4 +16,4 @@ let _ =
   rep_str "(let [f (proc [x] (- x 11))] (f (f 77)))";
   rep_str "((proc [f] (f (f 77))) (proc [x] (- x 11)))";
   rep_str "(let [x 200] (let [f (proc [z] (- z x))] (let [x 100] (let [g (proc [z] (- z x))] (- (f 1) (g 1))))))";
-  rep_str "(letrec zero x (if (zero? x) x (zero (- x 1))) (zero 5))";
+  rep_str "(letrec [zero [x] (if (zero? x) x (zero (- x 1)))] (zero 5))";
