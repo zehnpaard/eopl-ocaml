@@ -3,7 +3,7 @@ type valt = Num of int
           | Proc of string list * Exp.t * envt
 and envt = Empty
          | Extend of string * valt * envt
-         | ExtendRec of string * string * Exp.t * envt
+         | ExtendRec of string * string list * Exp.t * envt
  
 module Val = struct
   type t = valt = Num of int
@@ -26,8 +26,8 @@ module Env = struct
     | Extend (s', v', env') ->
         if s = s' then Some v'
         else find env' s
-    | ExtendRec (fname, arg, body, env') ->
-        if s = fname then Some (Val.Proc ([arg], body, env))
+    | ExtendRec (fname, args, body, env') ->
+        if s = fname then Some (Val.Proc (args, body, env))
         else find env' s 
   
   let extend env s v = Extend (s, v, env)
