@@ -16,11 +16,11 @@ let rec eval' env = function
       let f env (s, e) = Env.extend env s (eval' env e) in
       let env = List.fold_left f env ses in
       eval' env e2
-  | Exp.Proc (s, e) -> Val.Proc (s, e, env)
-  | Exp.Call (e1, e2) -> (match eval' env e1 with
-      | Val.Proc (s, e, env') ->
-          let v = eval' env e2 in
-          let env'' = Env.extend env' s v in
+  | Exp.Proc (ss, e) -> Val.Proc (ss, e, env)
+  | Exp.Call (e1, es) -> (match eval' env e1 with
+      | Val.Proc (ss, e, env') ->
+          let vs = List.map (eval' env) es in
+          let env'' = Env.extend_list env' ss vs in
           eval' env'' e
       | _ -> failwith "Calling non-procedure")
   | Exp.LetRec (fname, arg, body, e) ->

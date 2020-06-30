@@ -21,3 +21,4 @@ let _ =
   rep_str "(let [(x 7) (y 2) (y (let [x (- x 1)] (- x y)))] (- (- x 8) y))";
   rep_str "(let [(x 5) (y (if (zero? x) 1 2))] (- x y))";
   rep_str "(let [(x 200) (f (proc [z] (- z x))) (x 100) (g (proc [z] (- z x)))] (- (f 1) (g 1)))";
+  rep_str "((proc [x y] (- x y)) 5 3)";
