@@ -23,7 +23,12 @@ let rec eval' env = function
           let env'' = Env.extend_list env' ss vs in
           eval' env'' e
       | _ -> failwith "Calling non-procedure")
-  | Exp.LetRec (fname, args, body, e) ->
-      eval' (Env.extend_rec env fname args body) e
+  | Exp.LetRec (fns, e) ->
+      let rec split3 acc1 acc2 acc3= function
+      | [] -> List.rev acc1, List.rev acc2, List.rev acc3
+      | (a,b,c)::xs -> split3 (a::acc1) (b::acc2) (c::acc3) xs
+      in
+      let fnames, argss, bodys = split3 [] [] [] fns in
+      eval' (Env.extend_rec_list env fnames argss bodys) e
 
 let f = eval' Env.empty

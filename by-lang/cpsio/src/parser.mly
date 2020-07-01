@@ -29,7 +29,11 @@ expr :
   | LPAREN PROC; LBRACK; ss = list(VAR); RBRACK; e = expr; RPAREN { Exp.Proc (ss, e) }
   | LPAREN; e1 = expr; es = list(expr); RPAREN { Exp.Call (e1, es) }
   | LPAREN; LETREC; LBRACK; fname = VAR; LBRACK; args = list(VAR); RBRACK;
-     body = expr; RBRACK; e = expr; RPAREN { Exp.LetRec (fname, args, body, e) }
+     body = expr; RBRACK; e = expr; RPAREN { Exp.LetRec ([(fname, args, body)], e) }
+  | LPAREN; LETREC; LBRACK; fns = list(recexp); RBRACK;
+     e = expr; RPAREN { Exp.LetRec (fns, e) }
 
 varexp :
   | LPAREN; s = VAR; e = expr; RPAREN { (s, e) }
+recexp :
+  | LPAREN; fname = VAR; LBRACK; args = list(VAR); RBRACK; body = expr; RPAREN { (fname, args, body) }
