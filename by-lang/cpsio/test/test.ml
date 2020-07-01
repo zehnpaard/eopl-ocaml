@@ -23,3 +23,12 @@ let _ =
   rep_str "(let [(x 200) (f (proc [z] (- z x))) (x 100) (g (proc [z] (- z x)))] (- (f 1) (g 1)))";
   rep_str "((proc [x y] (- x y)) 5 3)";
   rep_str "(letrec [zeroand [x y] (if (zero? x) (- x y) (zeroand (- x 1) y))] (zeroand 5 3))";
+  rep_str "(letrec [(even [x]
+                      (if (zero? x)
+                        (zero? 0)
+                        (odd (- x 1))))
+                    (odd [x]
+                      (if (zero? x)
+                        (zero? 1)
+                        (even (- x 1))))]
+              (odd 2))";
