@@ -25,6 +25,10 @@ let num_bool_op s op =
   in
   Val.Op(s, f)
 
+let zero_op = function
+| [Val.Num n] -> Val.Bool(n = 0)
+| _ -> failwith "Incorrect argument passed to zero?"
+
 let builtins =
 [ "+", num_num_op "+" (+)
 ; "-", num_num_op "-" (-)
@@ -32,6 +36,7 @@ let builtins =
 ; "/", num_num_op "/" (/)
 ; "true", Val.Bool true
 ; "false", Val.Bool false
+; "zero?", Val.Op("zero?",zero_op)
 ]
 
 let load env =

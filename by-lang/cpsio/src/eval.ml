@@ -3,9 +3,6 @@ let rec eval' env = function
   | Exp.Var s -> (match Env.find env s with
       | Some v -> v
       | None -> failwith "Variable not found in environment")
-  | Exp.ZeroP e -> (match eval' env e with
-      | Val.Num n -> Val.Bool (n = 0)
-      | _ -> failwith "Zero-checking non-numeric value")
   | Exp.If (e1, e2, e3) -> (match eval' env e1 with
       | Val.Bool b -> eval' env (if b then e2 else e3)
       | _ -> failwith "Using non-boolean if-condition")

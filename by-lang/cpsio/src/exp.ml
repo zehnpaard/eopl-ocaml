@@ -1,7 +1,6 @@
 type t =
   | Const of int
   | Var of string
-  | ZeroP of t
   | If of t * t * t
   | Let of (string * t) list * t
   | Proc of string list * t

@@ -12,7 +12,6 @@ let variable = (alpha|char) (alpha|char|digit)*
 rule f = parse
   | whitespace* { f lexbuf }
   | number as n { INT (int_of_string n) }
-  | "zero?" { ZERO }
   | "(" { LPAREN }
   | ")" { RPAREN }
   | "[" { LBRACK }
