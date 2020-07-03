@@ -1,5 +1,6 @@
 type valt = Num of int
           | Bool of bool
+          | Op of string * (valt list -> valt)
           | Proc of string list * Exp.t * envt
 and envt = Empty
          | Extend of string * valt * envt
@@ -8,11 +9,13 @@ and envt = Empty
 module Val = struct
   type t = valt = Num of int
                 | Bool of bool
+                | Op of string * (valt list -> valt)
                 | Proc of string list * Exp.t * envt
 
   let to_str = function
     | Num n -> string_of_int n
     | Bool b -> if b then "True" else "False"
+    | Op(s,_) -> "Op(" ^ s ^ ")"
     | Proc _ -> "Proc"
 end
 

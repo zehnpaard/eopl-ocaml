@@ -5,7 +5,6 @@
 %token RPAREN
 %token LBRACK
 %token RBRACK
-%token DIFF
 %token IF
 %token LET
 %token PROC
@@ -22,7 +21,6 @@ expr :
   | n = INT { Exp.Const n }
   | s = VAR { Exp.Var s }
   | LPAREN; ZERO; e = expr; RPAREN { Exp.ZeroP e }
-  | LPAREN; DIFF; e1 = expr; e2 = expr; RPAREN { Exp.Diff (e1, e2) }
   | LPAREN; IF; e1 = expr; e2 = expr; e3 = expr; RPAREN { Exp.If (e1, e2, e3) }
   | LPAREN; LET; LBRACK; s = VAR; e1 = expr; RBRACK; e2 = expr; RPAREN { Exp.Let ([(s, e1)], e2) }
   | LPAREN; LET; LBRACK; ses = nonempty_list(varexp); RBRACK; e2 = expr; RPAREN { Exp.Let (ses, e2) }

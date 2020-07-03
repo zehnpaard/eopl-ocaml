@@ -4,9 +4,10 @@ open Parser
 
 let whitespace = [' ' '\t' '\n']
 let digit = ['0'-'9']
-let char = ['a'-'z' 'A'-'Z']
+let alpha = ['a'-'z' 'A'-'Z']
 let number = ('0'|['1'-'9'] digit*)
-let variable = char (char|digit)*
+let char = ['-' '+' '*' '/' '?' '!' '=']
+let variable = (alpha|char) (alpha|char|digit)*
 
 rule f = parse
   | whitespace* { f lexbuf }
@@ -16,7 +17,6 @@ rule f = parse
   | ")" { RPAREN }
   | "[" { LBRACK }
   | "]" { RBRACK }
-  | "-" { DIFF }
   | "if" { IF }
   | "let" { LET }
   | "proc" { PROC }
