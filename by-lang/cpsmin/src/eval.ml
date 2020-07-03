@@ -12,7 +12,12 @@ let rec eval' env = function
           let vs = List.map (eval' env) es in
           let env'' = Env.extend_list env' ss vs in
           eval' env'' e
-      | Val.Op (_, f) -> f (List.map (eval' env) es)
+      | Val.Op (_, f) -> (match List.rev es with
+        | (Proc([s],e))::es ->
+          let res = f (List.map (eval' env) (List.rev es)) in
+          let env = Env.extend env s res in
+          eval' env e
+        | _ -> failwith "Continuation not found in call args")
       | _ -> failwith "Calling non-procedure")
 
-let f = eval' (Builtin.load Env.empty)
+let f e = eval' (Builtin.load Env.empty) (Tocps.f e)

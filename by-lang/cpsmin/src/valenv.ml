@@ -16,7 +16,7 @@ module Val = struct
     | Num n -> string_of_int n
     | Bool b -> if b then "True" else "False"
     | Op(s,_) -> "Op(" ^ s ^ ")"
-    | Proc _ -> "Proc"
+    | Proc(ss,_,_) -> "Proc(" ^ (String.concat " " ss) ^ ")"
 end
 
 module Env = struct
