@@ -1,7 +1,7 @@
 let num_num_op s op =
-  let g = function
+  let g v = match v with
   | Val.Num n -> n
-  | _ -> failwith @@ "Non-numeric value passed to numeric op " ^ s
+  | _ -> failwith @@ Printf.sprintf "Non-numeric value %s passed to numeric op %s" (Val.to_str v) s
   in
   let f xs = match List.map g xs with
   | [] -> failwith @@ Printf.sprintf "Numeric op %s applied to empty list" s
@@ -10,9 +10,9 @@ let num_num_op s op =
   Val.Op(s, f)
 
 let num_bool_op s op =
-  let g = function
+  let g v = match v with
   | Val.Num n -> n
-  | _ -> failwith @@ "Non-numeric value passed to numeric op " ^ s
+  | _ -> failwith @@ Printf.sprintf "Non-numeric value %s passed to numeric op %s" (Val.to_str v) s
   in
   let rec h op = function
   | [] | [_] -> Val.Bool true
