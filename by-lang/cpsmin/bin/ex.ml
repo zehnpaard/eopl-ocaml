@@ -3,6 +3,7 @@ open Cpsmin
 let f s =
   Lexing.from_string s
   |> Parser.f Lexer.f
+  |> Tocps.f
   |> Eval.f
   |> Val.to_str
   |> print_endline
