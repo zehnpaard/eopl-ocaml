@@ -1,16 +1,16 @@
 type valt = Num of int
           | Bool of bool
           | Op of string * (valt list -> valt)
-          | Proc of string list * Exp.t * envt
+          | Proc of string list * Cexp.t * envt
 and envt = Empty
          | Extend of string * valt * envt
-         | ExtendRec of (string * (string list * Exp.t)) list * envt
+         | ExtendRec of (string * (string list * Cexp.t)) list * envt
  
 module Val = struct
   type t = valt = Num of int
                 | Bool of bool
                 | Op of string * (valt list -> valt)
-                | Proc of string list * Exp.t * envt
+                | Proc of string list * Cexp.t * envt
 
   let to_str = function
     | Num n -> string_of_int n
