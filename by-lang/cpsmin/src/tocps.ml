@@ -23,9 +23,12 @@ let rec g k e = match e with
   let g' cont_body (e, v) = g (Cexp.Proc([v],cont_body)) e in
   List.fold_left g' cont_body evs
 | Exp.If(cond,yes,no) ->
-  let v = gensym () in
-  let cont = Cexp.Proc([v],Cexp.If(Cexp.Var(v),g k yes,g k no)) in
-  g cont cond
+  if is_simple cond then
+    Cexp.If(simple_transform cond,g k yes,g k no)
+  else
+    let v = gensym () in
+    let cont = Cexp.Proc([v],Cexp.If(Cexp.Var(v),g k yes,g k no)) in
+    g cont cond
 and simple_transform = function
 | Exp.Const n -> Cexp.Const n
 | Exp.Var s -> Cexp.Var s
