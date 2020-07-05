@@ -4,18 +4,11 @@ let gensym =
   f 
 
 let is_simple = function
-| Exp.Const _ | Exp.Var _ -> true
+| Exp.Const _ | Exp.Var _ | Exp.Proc _ -> true
 | _ -> false
 
-let rec simple_transform = function
-| Exp.Const n -> Cexp.Const n
-| Exp.Var s -> Cexp.Var s
-| Exp.Call(proc,es) -> Cexp.Call(simple_transform proc, List.map simple_transform es)
-| Exp.If(cond,yes,no) -> Cexp.If(simple_transform cond, simple_transform yes, simple_transform no)
-| Exp.Proc(ss,body) -> Cexp.Proc(ss, simple_transform body)
-
 let rec g k e = match e with
-| Exp.Const _ | Exp.Var _ -> Cexp.Call(k,[simple_transform e])
+| Exp.Const _ | Exp.Var _ | Exp.Proc _ -> Cexp.Call(k,[simple_transform e])
 | Exp.Call(proc,es) ->
   let es = proc::es in
   let es' = List.filter (fun e -> not @@ is_simple e) es in
@@ -33,9 +26,13 @@ let rec g k e = match e with
   let v = gensym () in
   let cont = Cexp.Proc([v],Cexp.If(Cexp.Var(v),g k yes,g k no)) in
   g cont cond
+and simple_transform = function
+| Exp.Const n -> Cexp.Const n
+| Exp.Var s -> Cexp.Var s
 | Exp.Proc(ss,body) ->
-  let v = gensym () in
-  Cexp.Call(k,[Cexp.Proc(ss@[v], g (Cexp.Var v) body)])
+    let v = gensym () in
+    Cexp.Proc(ss@[v], g (Cexp.Var v) body)
+| Exp.Call _ | Exp.If _ -> failwith "Simple transform of complex expression"
 
 let f e =
   let v = gensym () in
