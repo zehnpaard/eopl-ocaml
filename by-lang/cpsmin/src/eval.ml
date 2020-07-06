@@ -21,5 +21,11 @@ let rec eval' env = function
           eval' env'' e
         | _ -> failwith "")
       | _ -> failwith "Calling non-procedure")
+  | Cexp.Cont (s,e) -> Val.Proc ([s], e, env)
+  | Cexp.ApplyCont(k,e) -> (match eval' env k with
+      | Val.Proc([s],e',env') ->
+          let v = eval' env e in
+          eval' (Env.extend env' s v) e'
+      | _ -> failwith "ApplyCont on non-cont")
 
 let f = eval' (Builtin.load Env.empty)
